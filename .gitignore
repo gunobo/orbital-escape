@@ -12,6 +12,11 @@ __pycache__/
 .venv/
 venv/
 
+# Cloudflare Tunnel secrets (절대 공개 저장소에 올리면 안 됨)
+cloudflared/*.json
+cloudflared/config.yml
+!cloudflared/config.yml.example
+
 # Editor
 .vscode/*
 !.vscode/extensions.json
