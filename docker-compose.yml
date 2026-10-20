@@ -1,8 +1,24 @@
 services:
+  backend:
+    build: ./backend
+    container_name: orbital-escape-api
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: sqlite:////data/app.db
+    volumes:
+      - ./data:/data
+    networks:
+      - orbital-escape
+
   web:
     build: ./frontend
     container_name: orbital-escape-web
     restart: unless-stopped
+    depends_on:
+      - backend
     networks:
       - orbital-escape
 

@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { ObstacleSettings } from "../types";
 
 interface Props {
   best: number;
+  accountSlot: ReactNode;
+  leaderboardSlot: ReactNode;
   onStart: (settings: ObstacleSettings) => void;
 }
 
-export default function SettingsScreen({ best, onStart }: Props) {
+export default function SettingsScreen({ best, accountSlot, leaderboardSlot, onStart }: Props) {
   const [verticalSpeed, setVerticalSpeed] = useState(3);
   const [horizontalSpeed, setHorizontalSpeed] = useState(2);
 
@@ -15,6 +17,8 @@ export default function SettingsScreen({ best, onStart }: Props) {
       <div className="panel">
         <h1>궤도이탈</h1>
         <p className="subtitle">중력과 힘의 크기를 조절해 여러 중력장을 통과하세요.</p>
+
+        {accountSlot}
 
         <div className="field">
           <label>
@@ -58,6 +62,7 @@ export default function SettingsScreen({ best, onStart }: Props) {
           출발
         </button>
       </div>
+      <div className="panel side-panel">{leaderboardSlot}</div>
     </div>
   );
 }

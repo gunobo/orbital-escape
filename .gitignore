@@ -21,3 +21,9 @@ cloudflared/config.yml
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# Local DB
+*.db
+
+# Runtime data (SQLite)
+data/

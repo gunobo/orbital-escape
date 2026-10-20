@@ -194,3 +194,118 @@
   font-size: 12px;
   color: #6b7394;
 }
+
+/* Account / leaderboard */
+.overlay-screen {
+  gap: 20px;
+  flex-wrap: wrap;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.side-panel {
+  width: min(280px, 92vw);
+  padding: 24px 20px;
+  text-align: left;
+}
+
+.account {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-logged {
+  flex-direction: row;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #c6cdf0;
+}
+
+.dev-login {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.dev-login input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8f0ff;
+  font-size: 14px;
+}
+
+.ghost-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(124, 211, 255, 0.5);
+  background: transparent;
+  color: #7cd3ff;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ghost-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: #9aa5c9;
+  margin: 4px 0;
+}
+
+.error {
+  font-size: 12.5px;
+  color: #ff5c6c;
+  margin: 4px 0;
+}
+
+.leaderboard h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.leaderboard ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.leaderboard li {
+  display: flex;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+
+.leaderboard li.me {
+  background: rgba(124, 92, 255, 0.25);
+}
+
+.leaderboard .rank {
+  width: 22px;
+  color: #7cd3ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard .name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard .score {
+  color: #c6cdf0;
+  font-variant-numeric: tabular-nums;
+}

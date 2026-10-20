@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import { api, ApiError, loadToken, saveToken } from "./api";
+import type { ApiUser, AppConfig, Leaderboard as LeaderboardData, ScoreResult } from "./api";
+import AccountPanel from "./components/AccountPanel";
 import GameCanvas from "./components/GameCanvas";
 import GameOverScreen from "./components/GameOverScreen";
 import HUD from "./components/HUD";
+import Leaderboard from "./components/Leaderboard";
 import SettingsScreen from "./components/SettingsScreen";
 import { BEST_SCORE_KEY } from "./constants/physics";
 import type { GameOverReason, GamePhase, HudSnapshot, ObstacleSettings } from "./types";
@@ -17,9 +21,19 @@ const INITIAL_HUD: HudSnapshot = {
   fieldInfo: null,
 };
 
+type SubmitState = "idle" | "submitting" | "done" | "error" | "anonymous";
+
 function readBest(): number {
-  const raw = localStorage.getItem(BEST_SCORE_KEY);
-  return raw ? Number(raw) : 0;
+  try {
+    const raw = localStorage.getItem(BEST_SCORE_KEY);
+    return raw ? Number(raw) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function errorMessage(e: unknown): string {
+  return e instanceof ApiError ? e.message : "서버에 연결할 수 없습니다.";
 }
 
 export default function App() {
@@ -31,11 +45,76 @@ export default function App() {
   const [hud, setHud] = useState<HudSnapshot>(INITIAL_HUD);
   const [result, setResult] = useState<{ score: number; reason: GameOverReason } | null>(null);
   const [runId, setRunId] = useState(0);
-  const [best, setBest] = useState<number>(readBest);
+  const [localBest, setLocalBest] = useState<number>(readBest);
+
+  const [config, setConfig] = useState<AppConfig | null>(null);
+  const [token, setToken] = useState<string | null>(loadToken);
+  const [user, setUser] = useState<ApiUser | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [board, setBoard] = useState<LeaderboardData | null>(null);
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [serverResult, setServerResult] = useState<ScoreResult | null>(null);
+
+  const best = Math.max(localBest, user?.best_score ?? 0);
+
+  useEffect(() => {
+    api.config().then(setConfig).catch(() => setConfig(null));
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+    api
+      .me(token)
+      .then(setUser)
+      .catch((e) => {
+        if (e instanceof ApiError && e.status === 401) {
+          saveToken(null);
+          setToken(null);
+        }
+      });
+  }, [token]);
+
+  useEffect(() => {
+    if (phase === "playing") return;
+    api.leaderboard(token).then(setBoard).catch(() => setBoard(null));
+  }, [phase, token, user?.nickname, serverResult]);
+
+  const applyLogin = (res: { token: string; user: ApiUser }) => {
+    saveToken(res.token);
+    setToken(res.token);
+    setUser(res.user);
+    setAuthError(null);
+  };
+
+  const handleGoogle = (credential: string) =>
+    api.loginGoogle(credential).then(applyLogin).catch((e) => setAuthError(errorMessage(e)));
+
+  const handleDevLogin = (name: string) =>
+    api.loginDev(name).then(applyLogin).catch((e) => setAuthError(errorMessage(e)));
+
+  const handleSetNickname = async (nickname: string): Promise<boolean> => {
+    if (!token) return false;
+    try {
+      setUser(await api.setNickname(token, nickname));
+      setAuthError(null);
+      return true;
+    } catch (e) {
+      setAuthError(errorMessage(e));
+      return false;
+    }
+  };
+
+  const handleLogout = () => {
+    saveToken(null);
+    setToken(null);
+    setUser(null);
+  };
 
   const handleStart = (settings: ObstacleSettings) => {
     setObstacleSettings(settings);
     setResult(null);
+    setServerResult(null);
+    setSubmitState("idle");
     setHud(INITIAL_HUD);
     setRunId((id) => id + 1);
     setPhase("playing");
@@ -43,16 +122,53 @@ export default function App() {
 
   const handleGameOver = (score: number, reason: GameOverReason) => {
     setResult({ score, reason });
-    if (score > best) {
-      setBest(score);
-      localStorage.setItem(BEST_SCORE_KEY, String(score));
+    if (score > localBest) {
+      setLocalBest(score);
+      try {
+        localStorage.setItem(BEST_SCORE_KEY, String(score));
+      } catch {
+        /* 저장소 사용 불가 시 무시 */
+      }
     }
     setPhase("gameover");
+
+    if (token && user?.nickname) {
+      setSubmitState("submitting");
+      api
+        .submitScore(token, score)
+        .then((res) => {
+          setServerResult(res);
+          setUser((u) => (u ? { ...u, best_score: res.best_score } : u));
+          setSubmitState("done");
+        })
+        .catch(() => setSubmitState("error"));
+    } else {
+      setSubmitState("anonymous");
+    }
   };
+
+  const leaderboardSlot = <Leaderboard data={board} myNickname={user?.nickname} />;
 
   return (
     <div className="app-root">
-      {phase === "settings" && <SettingsScreen best={best} onStart={handleStart} />}
+      {phase === "settings" && (
+        <SettingsScreen
+          best={best}
+          leaderboardSlot={leaderboardSlot}
+          accountSlot={
+            <AccountPanel
+              config={config}
+              user={user}
+              error={authError}
+              onGoogleCredential={handleGoogle}
+              onDevLogin={handleDevLogin}
+              onSetNickname={handleSetNickname}
+              onLogout={handleLogout}
+            />
+          }
+          onStart={handleStart}
+        />
+      )}
 
       {phase === "playing" && (
         <>
@@ -71,6 +187,9 @@ export default function App() {
           score={result.score}
           reason={result.reason}
           best={best}
+          serverResult={serverResult}
+          submitState={submitState}
+          leaderboardSlot={leaderboardSlot}
           onRestart={() => setPhase("settings")}
         />
       )}

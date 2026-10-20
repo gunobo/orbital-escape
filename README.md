@@ -4,15 +4,38 @@
 
 ## 현재 상태
 
-프론트엔드 3D 프로토타입 (React + TypeScript + Three.js / react-three-fiber). 점수는 `localStorage`에 로컬 최고기록으로 저장된다. 백엔드(FastAPI, 구글 로그인, 랭킹 DB)는 다음 단계에서 추가 예정.
+- **frontend/**: React + TypeScript + Three.js(react-three-fiber) 3D 게임
+- **backend/**: FastAPI + SQLAlchemy(SQLite) — 구글 로그인, 닉네임 설정, 점수 제출, 랭킹 API
+- 비로그인 상태에서도 플레이 가능하며 최고기록은 `localStorage`에 저장된다. 로그인(+닉네임 설정)하면 게임오버 시 점수가 서버로 전송되어 랭킹에 반영된다. (유저당 최고 기록만 유지)
 
-## 실행 방법
+## 로컬 실행
 
 ```bash
+# 1) 백엔드 (http://localhost:8000) — 로컬 테스트용 임시 로그인 켜기
+cd backend
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+DEV_AUTH_ENABLED=true .venv/bin/uvicorn app.main:app --reload --port 8000
+
+# 2) 프론트엔드 (http://localhost:5173, /api 는 8000으로 프록시됨)
 cd frontend
 npm install
 npm run dev
 ```
+
+백엔드 테스트: `cd backend && .venv/bin/python -m pytest`
+
+## API
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/api/config` | 프론트가 쓰는 설정 (구글 클라이언트 ID, 개발 로그인 여부) |
+| POST | `/api/auth/google` | 구글 ID 토큰 검증 → 서비스용 JWT 발급 (최초 로그인 시 유저 생성) |
+| GET | `/api/me` | 내 정보 |
+| PUT | `/api/me/nickname` | 닉네임 설정 (2~12자, 중복 불가) |
+| POST | `/api/scores` | 점수 제출 (최고 기록만 갱신, 닉네임 필수) |
+| GET | `/api/leaderboard?limit=` | 랭킹 (동점은 같은 순위, 먼저 달성한 사람이 앞) |
+
+> 주의: 점수는 클라이언트가 보고하는 값이라 서버가 플레이를 검증하지는 못한다. 현재는 범위 검사(0~1,000,000)만 한다.
 
 ## 조작법
 
@@ -24,7 +47,14 @@ npm run dev
 
 ## 배포 (Docker + Cloudflare Tunnel)
 
-`docker-compose.yml`에 프론트엔드(`web`, nginx로 정적 빌드 서빙)와 `cloudflared` 두 서비스가 정의되어 있다. 라즈베리파이(또는 다른 서버)에서 다음 순서로 붙이면 된다.
+`docker-compose.yml`에 `backend`(FastAPI, SQLite는 `./data`에 저장), `web`(nginx: 정적 빌드 서빙 + `/api` 프록시), `cloudflared` 세 서비스가 정의되어 있다. 라즈베리파이(arm64)에서도 그대로 빌드된다.
+
+**0. 환경변수 준비**: `.env.example`을 `.env`로 복사하고 채운다.
+- `GOOGLE_CLIENT_ID`: Google Cloud Console의 OAuth 클라이언트 ID(웹). **승인된 JavaScript 원본**에 `https://sg.imjemin.co.kr`를 추가해야 한다. (ID 토큰 방식이라 리디렉션 URI는 필요 없음)
+- `JWT_SECRET`: `openssl rand -hex 32` 등으로 생성한 긴 비밀키
+- `DEV_AUTH_ENABLED`: 운영에서는 반드시 `false`
+
+아래 터널 설정은 그다음 순서로 진행한다.
 
 1. **터널 생성 및 DNS 연결** (Cloudflare 계정에 로그인된 아무 기기에서 한 번만):
    ```bash
@@ -49,5 +79,5 @@ npm run dev
 
 ## 다음 단계
 
-- FastAPI 백엔드: 구글 로그인(닉네임 설정 포함), 점수 제출/랭킹 API, DB 연동
-- 라즈베리파이 배포 + Cloudflare Tunnel(`sg.imjemin.co.kr`) 연결
+- 라즈베리파이 배포 + Cloudflare Tunnel(`sg.imjemin.co.kr`) 연결 및 실제 구글 클라이언트 ID로 로그인 확인
+- 점수 부정 제출 방지(서버 측 플레이 검증 등), 게임 밸런스 조정

@@ -4,9 +4,26 @@
     {
       "name": "orbital-escape-frontend",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend", "run", "dev", "--", "--host"],
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "dev",
+        "--",
+        "--host"
+      ],
       "port": 5173,
       "autoPort": true
+    },
+    {
+      "name": "orbital-escape-backend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd backend && DEV_AUTH_ENABLED=true GOOGLE_CLIENT_ID= DATABASE_URL=sqlite:///./dev.db .venv/bin/uvicorn app.main:app --port 8000"
+      ],
+      "port": 8000,
+      "autoPort": false
     }
   ]
 }
