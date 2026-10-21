@@ -45,6 +45,20 @@ npm run dev
 - 운석에 부딪히면 즉시 실패
 - 연료가 거의 떨어지면 기름 아이템이 등장 (먹으면 연료 회복 + 질량 증가)
 
+## 밸런스 조정
+
+게임 로직은 렌더링과 분리된 순수 함수(`frontend/src/systems/simulation.ts`)라서 헤드리스로 돌릴 수 있다. 봇(`bot.ts`)이 수백 판을 플레이해 난이도를 수치로 보여준다.
+
+```bash
+cd frontend
+npm test                          # 시뮬레이션 단위 테스트
+VITE_RUNS=200 npm run balance     # 봇 밸런스 리포트 (생존 거리, 사망 원인, 연료/질량)
+```
+
+조정 가능한 값은 모두 [frontend/src/constants/physics.ts](frontend/src/constants/physics.ts)에 있다 (추력, 연료 소모/보충, 질량 증가, 게이트 크기, 중력 세기·난이도 상승폭, 운석 밀도 등).
+
+현재 값 기준 결과 (기본 운석 속도 3/2, 200판, 생존 거리 중앙값): 가만히 있기 ≈ 280m · 초보 봇 ≈ 770m · 보통 봇 ≈ 1,270m · 숙련 봇 ≈ 1,600m (상위 10% ≈ 2,400m). 봇은 사람의 *상대적인* 난이도 차이를 보기 위한 근사치이며 절대 기준은 아니다.
+
 ## 배포 (Docker + Cloudflare Tunnel)
 
 `docker-compose.yml`에 `backend`(FastAPI, SQLite는 `./data`에 저장), `web`(nginx: 정적 빌드 서빙 + `/api` 프록시), `cloudflared` 세 서비스가 정의되어 있다. 라즈베리파이(arm64)에서도 그대로 빌드된다.
