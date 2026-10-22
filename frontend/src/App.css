@@ -674,7 +674,8 @@ kbd {
   border-left: 2px solid var(--accent);
   border-radius: var(--r);
   pointer-events: none;
-  animation: hint-in 0.2s;
+  animation: hint-in 0.2s both, hint-out 0.3s both;
+  animation-delay: 0s, calc(var(--life, 5000ms) - 0.3s);
 }
 
 .hint-warn {
@@ -682,8 +683,12 @@ kbd {
 }
 
 @keyframes hint-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes hint-out {
+  to { opacity: 0; transform: translateX(-8px); }
 }
 
 /* 물리 패널 */
@@ -862,9 +867,166 @@ kbd {
   }
 }
 
+/* ── 움직임 ───────────────────────────────────
+   모든 움직임에는 이유가 있다. 화면이 바뀐 걸 알려 주거나, 방금 일어난 일을 알려 준다. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes tick {
+  from { opacity: 1; transform: scale(1.35); }
+  to { opacity: 0.15; transform: scale(0.92); }
+}
+
+@keyframes pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes heart-break {
+  0% { transform: scale(1.6); color: var(--danger); }
+  100% { transform: scale(1); }
+}
+
+@keyframes warn-pulse {
+  50% { opacity: 0.45; }
+}
+
+@keyframes nudge {
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+/* 화면이 바뀔 때: 열 하나씩 차례로 나타난다 */
+.overlay-screen > * {
+  animation: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.overlay-screen > :nth-child(2) {
+  animation-delay: 0.07s;
+}
+
+.overlay-screen > :nth-child(3) {
+  animation-delay: 0.14s;
+}
+
+.side-col > .side-panel {
+  animation: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.side-col > .side-panel:nth-child(1) {
+  animation-delay: 0.15s;
+}
+
+.side-col > .side-panel:nth-child(2) {
+  animation-delay: 0.22s;
+}
+
+.side-col > .side-panel:nth-child(3) {
+  animation-delay: 0.29s;
+}
+
+.leaderboard li {
+  animation: rise 0.3s both;
+  animation-delay: calc(var(--i, 0) * 45ms + 0.25s);
+}
+
+.pause-overlay {
+  animation: fade 0.2s both;
+}
+
+.pause-card {
+  animation: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.physics-panel {
+  animation: slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 카운트다운: 숫자가 바뀔 때마다 줄어들며 사라진다 */
+.countdown {
+  animation: tick 0.9s ease-out both;
+}
+
+/* 목숨을 잃으면 그 하트가 깨지듯 줄어든다 */
+.heart {
+  transition: color 0.3s;
+}
+
+.heart-just-lost {
+  animation: heart-break 0.5s ease-out;
+}
+
+/* 연료가 부족하면 막대가 천천히 깜빡인다 (경고) */
+.bar-fill-low {
+  animation: warn-pulse 1s ease-in-out infinite;
+}
+
+.gate-guide {
+  transition: border-color 0.2s;
+}
+
+/* 누르기/올리기 반응 */
+.primary-btn,
+.ghost-btn,
+.cb-btn,
+.quiz-choice,
+.seg button {
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s, transform 0.1s, filter 0.15s;
+}
+
+/* 퀴즈: 맞히면 살짝 커지고, 틀리면 흔들린다. 해설은 올라오며 나타난다 */
+.quiz-right {
+  animation: pop 0.35s ease-out;
+}
+
+.quiz-wrong {
+  animation: nudge 0.35s;
+}
+
+.quiz-explain {
+  animation: rise 0.3s both;
+}
+
+/* 점수가 다 올라간 뒤에 신기록 표시가 나타난다 */
+.new-best {
+  animation: pop 0.4s 0.95s both;
+}
+
+.concept-list details[open] > :not(summary) {
+  animation: fade 0.2s both;
+}
+
+/* 모션 줄이기를 켠 사람에게는 모든 움직임을 끈다 */
 @media (prefers-reduced-motion: reduce) {
-  .lives,
-  .hint-toast {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .physics-panel {
+    display: none;
+  }
+  .overlay-screen {
+    gap: 28px;
+    padding: 28px 16px;
   }
 }

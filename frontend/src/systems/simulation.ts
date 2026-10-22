@@ -58,7 +58,15 @@ export interface SimState {
   nearField: (NearFieldSnapshot & { position: Vec3 }) | null;
   energy: { engine: number; brake: number };
   stats: SimStats;
+  /** 이번 프레임에 일어난 사건 (렌더링이 읽고 비운다) */
+  events: SimEvent[];
 }
+
+/** 화면 효과용 사건: 시뮬레이션이 알려 주면 렌더링이 효과를 입힌다 (로직은 그대로 헤드리스로 돌릴 수 있다) */
+export type SimEvent =
+  | { kind: "gate"; passed: boolean; position: Vec3; radius: number }
+  | { kind: "oil"; position: Vec3 }
+  | { kind: "crash"; position: Vec3 };
 
 export const NO_INPUT: SimInput = { up: false, down: false, left: false, right: false, boost: false };
 
@@ -84,6 +92,7 @@ export function createSim(settings: ObstacleSettings, rng: Rng = Math.random): S
     forces: { gravity: { x: 0, y: 0, z: 0 }, thrust: { x: 0, y: 0, z: 0 } },
     nearField: null,
     energy: { engine: 0, brake: 0 },
+    events: [],
     stats: {
       maxGravAccel: 0,
       maxGravAccelR: 0,
@@ -224,6 +233,7 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
       const lateralDist = Math.hypot(pos.x - field.position.x, pos.y - field.position.y);
       field.passed = lateralDist <= field.gateRadius;
       field.resolved = true;
+      sim.events.push({ kind: "gate", passed: field.passed, position: { ...field.position }, radius: field.gateRadius });
       if (field.passed) {
         sim.stats.gatesPassed += 1;
         sim.streak += 1;
@@ -245,6 +255,7 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
   for (const obstacle of world.obstacles) {
     if (distance3(pos, obstacle.position) <= C.PLAYER_RADIUS + obstacle.radius) {
       sim.gameOver = "collision";
+      sim.events.push({ kind: "crash", position: { ...pos } });
       break;
     }
   }
@@ -256,6 +267,7 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
       world.oilActive = false;
       sim.fuel = clamp(sim.fuel + C.FUEL_REFILL_OIL, 0, C.FUEL_MAX);
       sim.stats.oilPickups += 1;
+      sim.events.push({ kind: "oil", position: { ...item.position } });
     }
   }
 

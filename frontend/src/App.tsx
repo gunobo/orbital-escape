@@ -260,7 +260,7 @@ export default function App() {
       if (shownHints.current.has(next.id)) return;
       shownHints.current.add(next.id);
     }
-    setHint(next);
+    setHint({ ...next, life: ms });
     window.clearTimeout(hintTimer.current);
     hintTimer.current = window.setTimeout(() => setHint(null), ms);
   }, []);
@@ -407,7 +407,11 @@ export default function App() {
           />
           {physicsView === "full" && <PhysicsPanel p={hud.physics} />}
           <HintToast hint={hint} />
-          {countdown !== null && !paused && <div className="countdown">{countdown}</div>}
+          {countdown !== null && !paused && (
+            <div className="countdown" key={countdown}>
+              {countdown}
+            </div>
+          )}
           {paused && <PauseOverlay onResume={resumeGame} onQuit={() => setPhase("settings")} />}
         </>
       )}

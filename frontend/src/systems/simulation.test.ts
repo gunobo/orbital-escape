@@ -198,6 +198,38 @@ describe("질량·연료·에너지", () => {
   });
 });
 
+describe("화면 효과용 사건", () => {
+  it("게이트를 지나면 통과/놓침 사건이 생긴다", () => {
+    const sim = calmSim();
+    const f = sim.world.fields[0];
+    sim.pos = { x: f.position.x, y: f.position.y, z: f.position.z - 0.01 };
+    stepSim(sim, NO_INPUT, DT);
+    const gate = sim.events.find((e) => e.kind === "gate");
+    expect(gate && gate.kind === "gate" && gate.passed).toBe(true);
+
+    const miss = calmSim();
+    const g = miss.world.fields[0];
+    miss.pos = { x: g.position.x + 9, y: g.position.y, z: g.position.z - 0.01 };
+    stepSim(miss, NO_INPUT, DT);
+    const m = miss.events.find((e) => e.kind === "gate");
+    expect(m && m.kind === "gate" && m.passed).toBe(false);
+  });
+
+  it("기름을 먹거나 부딪히면 사건이 생긴다", () => {
+    const sim = calmSim();
+    sim.fuel = 10;
+    sim.world.oilItems.push({ id: 7, position: { ...sim.pos, z: sim.pos.z + 0.1 }, radius: 1, consumed: false });
+    stepSim(sim, NO_INPUT, DT);
+    expect(sim.events.some((e) => e.kind === "oil")).toBe(true);
+
+    const hit = calmSim();
+    hit.world.obstacles.push({ id: 8, position: { ...hit.pos, z: hit.pos.z + 0.5 }, velocity: { x: 0, y: 0, z: 0 }, radius: 1, age: 1 });
+    stepSim(hit, NO_INPUT, DT);
+    expect(hit.gameOver).toBe("collision");
+    expect(hit.events.some((e) => e.kind === "crash")).toBe(true);
+  });
+});
+
 describe("운석: 자유낙하 vs 수평투사", () => {
   const SETTINGS = { verticalSpeed: 0, horizontalSpeed: 0 };
 

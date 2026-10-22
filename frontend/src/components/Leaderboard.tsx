@@ -13,8 +13,12 @@ export default function Leaderboard({ data, myNickname }: Props) {
       {data && data.entries.length === 0 && <p className="hint">아직 기록이 없습니다.</p>}
       {data && data.entries.length > 0 && (
         <ol>
-          {data.entries.map((e) => (
-            <li key={`${e.rank}-${e.nickname}`} className={e.nickname === myNickname ? "me" : undefined}>
+          {data.entries.map((e, i) => (
+            <li
+              key={`${e.rank}-${e.nickname}`}
+              className={e.nickname === myNickname ? "me" : undefined}
+              style={{ "--i": i } as React.CSSProperties}
+            >
               <span className="rank">{e.rank}</span>
               <span className="name">{e.nickname}</span>
               <span className="score">{e.score.toLocaleString()} m</span>

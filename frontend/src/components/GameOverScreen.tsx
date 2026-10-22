@@ -4,6 +4,7 @@ import type { ConceptId } from "../learning/concepts";
 import type { Question } from "../learning/quiz";
 import { summaryLines } from "../learning/summary";
 import type { GameOverReason, RunSummary } from "../types";
+import CountUp from "./CountUp";
 import QuizPanel from "./QuizPanel";
 
 export type SubmitState =
@@ -63,7 +64,9 @@ export default function GameOverScreen({
       <div className="panel">
         <h1>궤도 이탈</h1>
         <p className="subtitle">{REASON_TEXT[reason]}</p>
-        <div className="score-result">{score} m</div>
+        <div className="score-result">
+          <CountUp value={score} /> m
+        </div>
         {isNewBest && <div className="new-best">신기록</div>}
         {serverResult && <div className="best-line">전체 {serverResult.rank}위</div>}
         <div className="best-line">최고기록: {best} m</div>

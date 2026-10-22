@@ -40,7 +40,13 @@ function Lives({ misses }: { misses: number }) {
   return (
     <div className="lives" key={misses} aria-label={`남은 목숨 ${left}개`}>
       {Array.from({ length: C.MAX_MISSES }, (_, i) => (
-        <Heart key={i} size={26} weight={i < left ? "fill" : "regular"} className={i < left ? "heart" : "heart heart-lost"} aria-hidden />
+        <Heart
+          key={i}
+          size={26}
+          weight={i < left ? "fill" : "regular"}
+          className={i < left ? "heart" : i === left ? "heart heart-lost heart-just-lost" : "heart heart-lost"}
+          aria-hidden
+        />
       ))}
     </div>
   );
