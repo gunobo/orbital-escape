@@ -81,8 +81,8 @@ describe("학습 진행도 / 요약", () => {
 
   it("요약은 이번 판 숫자를 담는다", () => {
     const text = summaryLines(RUN).join("\n");
-    expect(text).toContain("8.0 m/s²");
-    expect(text).toContain("2.0 m/s²"); // 거리 2배 → 1/4
+    expect(text).toContain("a = 8.0 m/s²");
+    expect(text).toContain("r = 7.5 m");
     expect(text).toContain("1.20 ~ 1.60");
   });
 });

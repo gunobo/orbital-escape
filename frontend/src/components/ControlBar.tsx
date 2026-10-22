@@ -1,26 +1,29 @@
 import { VIEW_ORDER, VIEWS, type ViewId } from "../constants/camera";
+import type { PhysicsView } from "../constants/physicsView";
 import type { ControlMode } from "./Scene";
+
+const PHYSICS_LABEL: Record<PhysicsView, string> = { off: "🔬", arrows: "🔬 화살표", full: "🔬 화살표+패널" };
 
 interface Props {
   view: ViewId;
   onView: (view: ViewId) => void;
   controlMode: ControlMode;
   onControlMode: (mode: ControlMode) => void;
-  showPhysics: boolean;
-  onTogglePhysics: () => void;
+  physicsView: PhysicsView;
+  onCyclePhysics: () => void;
   inertialControl: boolean;
   onToggleInertial: () => void;
   onPause: () => void;
 }
 
-/** 화면 위쪽 중앙의 조작 막대 (마우스로 눌러도 되고, 괄호 안의 키로도 된다) */
+/** 화면 아래 중앙의 조작 막대. 글자는 최소로 하고, 자세한 설명은 마우스를 올리면(툴팁) 나온다. */
 export default function ControlBar({
   view,
   onView,
   controlMode,
   onControlMode,
-  showPhysics,
-  onTogglePhysics,
+  physicsView,
+  onCyclePhysics,
   inertialControl,
   onToggleInertial,
   onPause,
@@ -32,31 +35,29 @@ export default function ControlBar({
   };
   return (
     <div className="control-bar">
-      <button className="cb-btn" onClick={press(onPause)} title="일시정지 (Space / P / Esc)">
-        ⏸ 일시정지
+      <button className="cb-btn" onClick={press(onPause)} title="일시정지 (Space)">
+        ⏸
       </button>
       <span className="cb-group" title="시점 전환 (C 또는 1~5)">
         {VIEW_ORDER.map((id, i) => (
-          <button key={id} className={"cb-btn" + (view === id ? " cb-on" : "")} onClick={press(() => onView(id))} title={VIEWS[id].hint}>
-            {i + 1} {VIEWS[id].label}
+          <button key={id} className={"cb-btn" + (view === id ? " cb-on" : "")} onClick={press(() => onView(id))} title={`${VIEWS[id].label} — ${VIEWS[id].hint}`}>
+            {view === id ? `${i + 1} ${VIEWS[id].label}` : i + 1}
           </button>
         ))}
       </span>
-      <span className="cb-group">
-        <button
-          className={"cb-btn" + (controlMode === "mouse" ? " cb-on" : "")}
-          onClick={press(() => onControlMode(controlMode === "mouse" ? "keyboard" : "mouse"))}
-          title="조종 방식 전환 (M): 마우스로 가리키면 그쪽으로 날아가요"
-        >
-          {controlMode === "mouse" ? "🖱 마우스 조종" : "⌨ 키보드 조종"}
-        </button>
-        <button className={"cb-btn" + (inertialControl ? " cb-on" : "")} onClick={press(onToggleInertial)} title="관성 제어(자동 제동) 켜기/끄기 (Z)">
-          관성 제어 {inertialControl ? "ON" : "OFF"}
-        </button>
-        <button className={"cb-btn" + (showPhysics ? " cb-on" : "")} onClick={press(onTogglePhysics)} title="물리 패널·힘 화살표 (H)">
-          🔬 물리
-        </button>
-      </span>
+      <button
+        className={"cb-btn" + (controlMode === "mouse" ? " cb-on" : "")}
+        onClick={press(() => onControlMode(controlMode === "mouse" ? "keyboard" : "mouse"))}
+        title="조종 방식 (M): 마우스로 가리키면 그쪽으로 날아가요"
+      >
+        {controlMode === "mouse" ? "🖱" : "⌨"}
+      </button>
+      <button className={"cb-btn" + (inertialControl ? " cb-on" : "")} onClick={press(onToggleInertial)} title="관성 제어(자동 제동) 켜기/끄기 (Z)">
+        제동 {inertialControl ? "ON" : "OFF"}
+      </button>
+      <button className={"cb-btn" + (physicsView !== "off" ? " cb-on" : "")} onClick={press(onCyclePhysics)} title="물리 보기 전환 (H): 끔 → 화살표 → 화살표+패널">
+        {PHYSICS_LABEL[physicsView]}
+      </button>
     </div>
   );
 }

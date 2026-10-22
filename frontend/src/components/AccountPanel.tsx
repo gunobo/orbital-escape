@@ -48,15 +48,11 @@ export default function AccountPanel({
           </div>
         )}
         {config && !config.google_client_id && !config.dev_auth && (
-          <p className="warn">
-            ⚠ 서버에 로그인 방법이 설정되어 있지 않아 랭킹에 등록할 수 없습니다.
-            <br />
-            (로컬 테스트: 백엔드를 DEV_AUTH_ENABLED=true 로 실행 / 운영: GOOGLE_CLIENT_ID 설정)
-          </p>
+          <p className="warn">⚠ 로그인이 설정되지 않아 랭킹 등록 불가</p>
         )}
         {!config && (
           <>
-            <p className="warn">⚠ 서버(백엔드)에 연결할 수 없어 랭킹에 등록할 수 없습니다. 기록은 이 브라우저에만 저장됩니다.</p>
+            <p className="warn">⚠ 서버 연결 안 됨 · 랭킹 등록 불가</p>
             <button className="ghost-btn" onClick={onRetryConfig}>
               다시 연결
             </button>

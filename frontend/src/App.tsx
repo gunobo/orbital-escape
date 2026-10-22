@@ -12,6 +12,7 @@ import Leaderboard from "./components/Leaderboard";
 import PauseOverlay from "./components/PauseOverlay";
 import PhysicsPanel from "./components/PhysicsPanel";
 import type { ControlMode } from "./components/Scene";
+import { nextPhysicsView, type PhysicsView } from "./constants/physicsView";
 import SettingsScreen from "./components/SettingsScreen";
 import { VIEW_ORDER, type ViewId } from "./constants/camera";
 import { BEST_SCORE_KEY, FUEL_MAX, MAX_MISSES, OIL_TRIGGER_THRESHOLD } from "./constants/physics";
@@ -98,7 +99,8 @@ export default function App() {
   const [view, setView] = useState<ViewId>("chase");
   const [paused, setPaused] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [showPhysics, setShowPhysics] = useState(true);
+  // 물리 보기: 끔 → 화살표만(기본) → 화살표 + 패널. 기본 화면은 글이 거의 없게 한다
+  const [physicsView, setPhysicsView] = useState<PhysicsView>("arrows");
   const [controlMode, setControlModeState] = useState<ControlMode>(readControlMode);
   const [inertialControl, setInertialControl] = useState(true);
   const [hint, setHint] = useState<Hint | null>(null);
@@ -215,7 +217,7 @@ export default function App() {
       } else if (VIEW_KEYS[e.code]) {
         setView(VIEW_KEYS[e.code]);
       } else if (e.code === "KeyH") {
-        setShowPhysics((v) => !v);
+        setPhysicsView(nextPhysicsView);
       } else if (e.code === "KeyZ") {
         setInertialControl((v) => !v);
       } else if (e.code === "KeyM") {
@@ -271,39 +273,19 @@ export default function App() {
 
       if (prev && h.misses > prev.misses) {
         const left = Math.max(0, MAX_MISSES - h.misses);
-        showHint(
-          { id: `life-${h.misses}`, title: `💔 게이트를 놓쳤어요! 남은 목숨 ${left}개`, text: "고리 한가운데를 지나가야 해요. 다음 게이트 안내(레이더)를 보세요.", tone: "warn" },
-          4000,
-          false,
-        );
+        showHint({ id: `life-${h.misses}`, title: `💔 목숨 ${left}개 남음`, tone: "warn" }, 2500, false);
       }
       if (h.physics.field) {
-        showHint({
-          id: "gravity",
-          title: "🪐 중력장 진입! 만유인력 F = G·M·m / r²",
-          text: "가까울수록 힘이 커져요 (거리가 절반이면 4배). 보라색 화살표가 나를 당기는 힘, 주황색이 행성이 받는 반작용이에요 — 길이가 같죠? (작용-반작용)",
-        });
+        showHint({ id: "gravity", title: "🪐 가까울수록 중력이 세져요  F = GMm/r²" }, 5000);
       }
       if (h.physics.thrustForce > 0) {
-        showHint({
-          id: "thrust",
-          title: "🚀 F = ma",
-          text: "엔진이 힘 F를 내면 가속도 a = F/m 로 움직여요. 질량이 작을수록 더 잘 가속돼요. (하늘색 화살표 = 엔진 힘)",
-        });
+        showHint({ id: "thrust", title: "🚀 엔진 힘 F → 가속도 a = F/m" }, 4500);
       }
       if (h.fuel <= OIL_TRIGGER_THRESHOLD) {
-        showHint({
-          id: "fuel",
-          title: "⛽ 연료가 거의 없어요!",
-          text: "주황색 기름 아이템이 곧 나타나요. 먹으면 연료와 함께 질량이 늘어서 같은 힘으로는 가속도가 작아져요 (a = F/m).",
-        });
+        showHint({ id: "fuel", title: "⛽ 연료 부족! 주황색 기름을 먹으세요" }, 5000);
       }
       if (prev && h.fuel - prev.fuel > 30) {
-        showHint({
-          id: "oil",
-          title: "🛢 기름을 먹었어요 → 질량 증가",
-          text: `질량 ${prev.mass.toFixed(2)} → ${h.mass.toFixed(2)}. 중력(힘)은 질량에 비례해 커지지만, 중력 가속도는 그대로예요 (등가원리).`,
-        });
+        showHint({ id: "oil", title: "🛢 무거워짐 → 같은 힘이면 가속이 느려져요" }, 5000);
       }
     },
     [showHint],
@@ -324,14 +306,7 @@ export default function App() {
     setCountdown(3);
     setRunId((id) => id + 1);
     setPhase("playing");
-    showHint(
-      {
-        id: "start",
-        title: "🎮 시작!",
-        text: "마우스로 화면의 고리를 가리키면 우주선이 날아가요. Space 일시정지 · C 시점 전환 · H 물리 패널",
-      },
-      7000,
-    );
+    showHint({ id: "start", title: "🖱 마우스로 고리를 가리키세요  ·  Space 일시정지" }, 6000);
   };
 
   const submitScore = (score: number) => {
@@ -414,7 +389,7 @@ export default function App() {
             frozen={frozen}
             controlMode={controlMode}
             inertialControl={inertialControl}
-            showArrows={showPhysics}
+            showArrows={physicsView !== "off"}
             onHud={handleHud}
             onGameOver={handleGameOver}
           />
@@ -424,13 +399,13 @@ export default function App() {
             onView={setView}
             controlMode={controlMode}
             onControlMode={setControlMode}
-            showPhysics={showPhysics}
-            onTogglePhysics={() => setShowPhysics((v) => !v)}
+            physicsView={physicsView}
+            onCyclePhysics={() => setPhysicsView(nextPhysicsView)}
             inertialControl={inertialControl}
             onToggleInertial={() => setInertialControl((v) => !v)}
             onPause={pauseGame}
           />
-          {showPhysics && <PhysicsPanel p={hud.physics} />}
+          {physicsView === "full" && <PhysicsPanel p={hud.physics} />}
           <HintToast hint={hint} />
           {countdown !== null && !paused && <div className="countdown">{countdown}</div>}
           {paused && <PauseOverlay onResume={resumeGame} onQuit={() => setPhase("settings")} />}

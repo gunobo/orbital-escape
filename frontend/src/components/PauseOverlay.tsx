@@ -1,5 +1,4 @@
 import { CONCEPTS } from "../learning/concepts";
-import { VIEW_ORDER, VIEWS } from "../constants/camera";
 
 interface Props {
   onResume: () => void;
@@ -11,35 +10,21 @@ export default function PauseOverlay({ onResume, onQuit }: Props) {
     <div className="pause-overlay">
       <div className="pause-card">
         <h1>⏸ 일시정지</h1>
-        <p className="subtitle">쉬는 동안 위의 시점 버튼을 눌러 물체를 살펴보고, 물리 패널로 개념을 확인해 보세요.</p>
 
-        <div className="pause-cols">
-          <div>
-            <h3>조작</h3>
-            <ul className="rules">
-              <li>🖱 <b>마우스 조종</b>: 화면의 고리를 가리키면 우주선이 그쪽으로 날아가요 (M: 키보드 조종으로 전환)</li>
-              <li>⌨ 방향키/WASD: 직접 가속 · Shift: 부스트</li>
-              <li>Space / P / Esc: 일시정지 · H: 물리 패널 · Z: 관성 제어</li>
-              <li>
-                시점 (C 또는 숫자키): {VIEW_ORDER.map((id, i) => `${i + 1} ${VIEWS[id].label}`).join(" · ")}
-              </li>
-              <li>목숨 3개: 게이트를 놓치면 -1, 운석에 부딪히면 즉시 종료</li>
-            </ul>
-          </div>
-          <div>
-            <h3>이 게임에서 배우는 것</h3>
-            <ul className="concept-mini">
-              {CONCEPTS.map((c) => (
-                <li key={c.id}>
-                  <b>
-                    {c.icon} {c.title}
-                  </b>{" "}
-                  <code>{c.formula}</code>
-                  <div>{c.summary}</div>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <ul className="keys">
+          <li><kbd>마우스</kbd> 고리를 가리키기</li>
+          <li><kbd>C</kbd> 시점</li>
+          <li><kbd>H</kbd> 물리 보기</li>
+          <li><kbd>Z</kbd> 제동</li>
+          <li><kbd>Space</kbd> 일시정지</li>
+        </ul>
+
+        <div className="concept-chips">
+          {CONCEPTS.map((c) => (
+            <span key={c.id} title={c.summary}>
+              {c.icon} {c.title} <code>{c.formula}</code>
+            </span>
+          ))}
         </div>
 
         <div className="pause-actions">
@@ -47,7 +32,7 @@ export default function PauseOverlay({ onResume, onQuit }: Props) {
             계속하기
           </button>
           <button className="ghost-btn" onClick={onQuit}>
-            처음 화면으로
+            처음으로
           </button>
         </div>
       </div>

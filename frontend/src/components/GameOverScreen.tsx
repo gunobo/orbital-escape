@@ -30,18 +30,18 @@ interface Props {
 }
 
 const REASON_TEXT: Record<GameOverReason, string> = {
-  collision: "운석과 충돌했습니다.",
-  "gate-miss": "중력장 게이트를 3번 놓쳐 목숨을 모두 잃었습니다.",
+  collision: "운석과 충돌!",
+  "gate-miss": "목숨을 모두 잃었어요",
 };
 
 const SUBMIT_TEXT: Record<SubmitState, string> = {
   idle: "",
-  submitting: "랭킹에 기록 전송 중...",
+  submitting: "랭킹 전송 중...",
   done: "",
-  error: "⚠ 서버에 연결할 수 없어 랭킹에 등록하지 못했습니다. (로컬 기록은 저장됨)",
-  expired: "⚠ 로그인이 만료되어 랭킹에 등록하지 못했습니다. 시작 화면에서 다시 로그인하세요.",
-  "no-login": "로그인하지 않아 랭킹에 등록되지 않았습니다. 시작 화면에서 로그인하세요.",
-  "no-nickname": "닉네임이 없어 랭킹에 등록되지 않았습니다. 시작 화면에서 닉네임을 정하세요.",
+  error: "⚠ 서버 연결 안 됨 · 랭킹 미등록",
+  expired: "⚠ 로그인 만료 · 다시 로그인하세요",
+  "no-login": "로그인하면 랭킹에 등록돼요",
+  "no-nickname": "닉네임을 정하면 랭킹에 등록돼요",
 };
 
 export default function GameOverScreen({

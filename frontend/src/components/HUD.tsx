@@ -25,7 +25,7 @@ function GateRadar({ gate }: { gate: NonNullable<HudSnapshot["gate"]> }) {
 }
 
 function guideText(gate: NonNullable<HudSnapshot["gate"]>): string {
-  if (gate.aligned) return "✓ 정렬됨 — 그대로 유지!";
+  if (gate.aligned) return "✓ 정렬됨";
   const parts: string[] = [];
   if (Math.abs(gate.right) >= 0.5) parts.push(`${gate.right > 0 ? "→" : "←"} ${Math.abs(gate.right).toFixed(1)}m`);
   if (Math.abs(gate.up) >= 0.5) parts.push(`${gate.up > 0 ? "↑" : "↓"} ${Math.abs(gate.up).toFixed(1)}m`);
@@ -62,10 +62,6 @@ export default function HUD({ hud, best }: Props) {
         </div>
         <div className="hud-lives-box">
           <Lives misses={hud.misses} />
-          <div className="lives-hint">게이트를 놓치면 목숨 -1 · 운석 충돌은 즉시 종료</div>
-          {C.MISS_RECOVER_STREAK > 0 && hud.misses > 0 && (
-            <div className="lives-hint">연속 통과 {hud.streak}/{C.MISS_RECOVER_STREAK} → 목숨 회복</div>
-          )}
         </div>
       </div>
 
@@ -73,7 +69,7 @@ export default function HUD({ hud, best }: Props) {
         <div className={"gate-guide" + (hud.gate.aligned ? " gate-ok" : "")}>
           <GateRadar gate={hud.gate} />
           <div className="gate-text">
-            <div className="gate-title">다음 게이트 {Math.max(0, Math.round(hud.gate.distance))}m</div>
+            <div className="gate-title">게이트 {Math.max(0, Math.round(hud.gate.distance))}m</div>
             <div className="gate-dir">{guideText(hud.gate)}</div>
           </div>
         </div>
@@ -81,17 +77,14 @@ export default function HUD({ hud, best }: Props) {
 
       <div className="hud-panel">
         <div className="hud-row">
-          <span>연료</span>
+          <span>⛽</span>
           <div className="bar">
             <div
               className={"bar-fill" + (fuelLow ? " bar-fill-low" : "")}
               style={{ width: `${fuelPct}%` }}
             />
           </div>
-        </div>
-        <div className="hud-row hud-stats">
-          <span>질량 {hud.mass.toFixed(2)}</span>
-          <span>연료 {Math.round(hud.fuel)}</span>
+          <span className="hud-mass">m {hud.mass.toFixed(2)}</span>
         </div>
       </div>
     </div>

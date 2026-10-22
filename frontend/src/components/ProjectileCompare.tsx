@@ -48,9 +48,7 @@ export default function ProjectileCompare({ v0, vx }: Props) {
           );
         })}
       </svg>
-      <figcaption>
-        0.5초마다 찍은 위치예요. 가로 점선이 항상 수평이죠? <b>수직 운동은 수평 속도와 상관없이 똑같아요</b> (g = {g} m/s², 달 표면 중력 값을 사용).
-      </figcaption>
+      <figcaption>가로 점선이 항상 수평 → 수직 운동은 똑같아요</figcaption>
     </figure>
   );
 }
