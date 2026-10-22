@@ -53,9 +53,9 @@ export const FIELD_FIRST_Z_MAX = 100;
 export const FIELD_SPAWN_INTERVAL_MIN = 55;
 export const FIELD_SPAWN_INTERVAL_MAX = 85;
 export const OBSTACLE_FIRST_Z = 60;
-/** 게이트 앞/뒤 이 거리(m) 안에는 운석을 소환하지 않는다 (정렬 구간 보호) */
 /** 플레이어 현재 위치 근처를 노리고 날아오는 운석의 비율 */
 export const OBSTACLE_AIM_PROB = 0.3;
+/** 게이트 앞/뒤 이 거리(m) 안에는 운석을 소환하지 않는다 (정렬 구간 보호) */
 export const OBSTACLE_GATE_CLEAR_BEFORE = 18;
 export const OBSTACLE_GATE_CLEAR_AFTER = 4;
 export const OBSTACLE_AREA_HALF_WIDTH = 12;
