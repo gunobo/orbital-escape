@@ -1,3 +1,4 @@
+import { SCREEN_RIGHT_X } from "../constants/camera";
 import { NO_INPUT, type SimInput, type SimState } from "./simulation";
 import type { Rng } from "./spawner";
 
@@ -76,8 +77,8 @@ export function createBot(profile: BotProfile, rng: Rng) {
     const ay = 2.0 * (ty - pos.y) - 1.6 * vel.y;
     const dead = 3;
     const input: SimInput = {
-      left: ax < -dead,
-      right: ax > dead,
+      left: ax * SCREEN_RIGHT_X < -dead,
+      right: ax * SCREEN_RIGHT_X > dead,
       down: ay < -dead,
       up: ay > dead,
       boost: profile.boost && urgent,

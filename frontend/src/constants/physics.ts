@@ -10,14 +10,14 @@ export const PLAYFIELD_HALF_HEIGHT = 10;
 
 export const PLAYER_RADIUS = 0.9;
 export const PLAYER_BASE_MASS = 1;
-export const PLAYER_MASS_INCREMENT = 0.3;
-export const PLAYER_MASS_MAX = 2.5;
+export const PLAYER_MASS_INCREMENT = 0.2;
+export const PLAYER_MASS_MAX = 2.0;
 
 /** 엔진이 내는 힘(F). 질량과 무관 — 무거워지면 같은 힘으로 가속도(a=F/m)가 줄어든다. */
 export const BASE_THRUST_FORCE = 17;
 export const BOOST_MULTIPLIER = 1.9;
 /** 아케이드 조작감을 위한 횡방향 감쇠(현실 우주에는 마찰이 없지만, 학습용 조작성을 위한 보정) */
-export const LATERAL_DAMPING_RATE = 0.8;
+export const LATERAL_DAMPING_RATE = 1.6;
 
 export const CRUISE_SPEED_BASE = 14;
 export const CRUISE_SPEED_GAIN_PER_METER = 0.015;
@@ -30,23 +30,25 @@ export const GRAVITY_FIELD_MU_GAIN_PER_METER = 0.25;
 export const GRAVITY_FIELD_MU_MAX = 750;
 export const GRAVITY_FIELD_DISPLAY_MASS = 5.4e4;
 export const GRAVITY_FIELD_INFLUENCE_RADIUS = 26;
-export const GRAVITY_FIELD_GATE_RADIUS = 4.0;
+export const GRAVITY_FIELD_GATE_RADIUS = 5.0;
 /** 특이점(분모가 0에 가까워지는 것) 방지용 최소 반경 */
 export const GRAVITY_MIN_R = 5;
 
 export const MAX_MISSES = 3;
+/** 게이트를 연속으로 이만큼 통과하면 미스가 1회 회복된다 (0이면 회복 없음 = 3회 누적 그대로) */
+export const MISS_RECOVER_STREAK = 3;
 
 export const FUEL_MAX = 100;
 export const FUEL_DRAIN_IDLE = 1.5;
-export const FUEL_DRAIN_THRUST = 4;
-export const FUEL_DRAIN_BOOST_EXTRA = 6;
-export const FUEL_REFILL_OIL = 70;
+export const FUEL_DRAIN_THRUST = 3;
+export const FUEL_DRAIN_BOOST_EXTRA = 5;
+export const FUEL_REFILL_OIL = 85;
 export const OIL_TRIGGER_THRESHOLD = 25;
 export const OIL_SPAWN_COOLDOWN = 12;
 export const OIL_ITEM_RADIUS = 2.0;
 export const OIL_SPAWN_AHEAD_Z = 30;
 
-export const SPAWN_AHEAD_Z = 150;
+export const SPAWN_AHEAD_Z = 200;
 export const DESPAWN_BEHIND_Z = 12;
 export const FIELD_FIRST_Z_MIN = 70;
 export const FIELD_FIRST_Z_MAX = 100;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { SCREEN_RIGHT_X } from "../constants/camera";
 import * as C from "../constants/physics";
 import { createSim, NO_INPUT, score, stepSim } from "./simulation";
 import { despawnBehind, maybeSpawnOil, spawnObstacles } from "./spawner";
@@ -21,6 +22,17 @@ describe("simulation", () => {
     stepSim(light, { ...NO_INPUT, right: true }, DT);
     stepSim(heavy, { ...NO_INPUT, right: true }, DT);
     expect(heavy.vel.x).toBeCloseTo(light.vel.x / 2, 5);
+  });
+
+  it("오른쪽 입력은 화면 오른쪽으로 민다 (카메라가 +z를 보므로 월드 -x)", () => {
+    const sim = createSim({ verticalSpeed: 0, horizontalSpeed: 0 }, mulberry32(1));
+    stepSim(sim, { ...NO_INPUT, right: true }, DT);
+    expect(SCREEN_RIGHT_X).toBe(-1);
+    expect(sim.vel.x * SCREEN_RIGHT_X).toBeGreaterThan(0);
+
+    const other = createSim({ verticalSpeed: 0, horizontalSpeed: 0 }, mulberry32(1));
+    stepSim(other, { ...NO_INPUT, left: true }, DT);
+    expect(other.vel.x * SCREEN_RIGHT_X).toBeLessThan(0);
   });
 
   it("연료가 0이면 추력이 먹지 않는다", () => {

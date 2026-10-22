@@ -13,8 +13,8 @@ export default function ObstacleView({ data }: Props) {
   useFrame((_state, delta) => {
     if (!ref.current) return;
     ref.current.position.set(data.position.x, data.position.y, data.position.z);
-    ref.current.rotation.x += delta * 0.8;
-    ref.current.rotation.y += delta * 1.1;
+    ref.current.rotation.x += delta * 0.25;
+    ref.current.rotation.y += delta * 0.35;
   });
 
   return (

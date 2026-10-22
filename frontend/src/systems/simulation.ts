@@ -1,3 +1,4 @@
+import { SCREEN_RIGHT_X } from "../constants/camera";
 import * as C from "../constants/physics";
 import type { FieldInfo, GameOverReason, ObstacleSettings, Vec3 } from "../types";
 import { clamp, distance3, gravityAccelToward } from "./physics";
@@ -26,6 +27,8 @@ export interface SimState {
   fuel: number;
   mass: number;
   misses: number;
+  /** 연속 게이트 통과 횟수 */
+  streak: number;
   elapsed: number;
   world: WorldState;
   settings: ObstacleSettings;
@@ -42,6 +45,7 @@ export function createSim(settings: ObstacleSettings, rng: Rng = Math.random): S
     fuel: C.FUEL_MAX,
     mass: C.PLAYER_BASE_MASS,
     misses: 0,
+    streak: 0,
     elapsed: 0,
     world: createWorldState(rng),
     settings,
@@ -88,8 +92,9 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
 
   let tx = 0;
   let ty = 0;
-  if (input.left) tx -= 1;
-  if (input.right) tx += 1;
+  // left/right 는 "화면 기준"이다. 카메라가 +z를 보므로 화면 오른쪽은 월드 -x (constants/camera.ts)
+  if (input.left) tx -= SCREEN_RIGHT_X;
+  if (input.right) tx += SCREEN_RIGHT_X;
   if (input.up) ty += 1;
   if (input.down) ty -= 1;
   const thrustMag = Math.hypot(tx, ty);
@@ -127,7 +132,14 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
       const lateralDist = Math.hypot(pos.x - field.position.x, pos.y - field.position.y);
       field.passed = lateralDist <= field.gateRadius;
       field.resolved = true;
-      if (!field.passed) {
+      if (field.passed) {
+        sim.streak += 1;
+        if (C.MISS_RECOVER_STREAK > 0 && sim.streak >= C.MISS_RECOVER_STREAK) {
+          sim.streak = 0;
+          sim.misses = Math.max(0, sim.misses - 1);
+        }
+      } else {
+        sim.streak = 0;
         sim.misses += 1;
         if (sim.misses >= C.MAX_MISSES) sim.gameOver = "gate-miss";
       }
@@ -159,4 +171,31 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
   spawnObstacles(world, pos, vel, sim.settings);
   maybeSpawnOil(world, pos, sim.fuel, sim.elapsed);
   despawnBehind(world, pos.z);
+}
+
+export interface GateGuide {
+  /** 게이트까지 남은 거리(m) */
+  distance: number;
+  /** 게이트 중심이 내 위치보다 화면 기준 오른쪽(+)/왼쪽(-)으로 얼마나 떨어져 있는지(m) */
+  right: number;
+  /** 위(+)/아래(-) 로 얼마나 떨어져 있는지(m) */
+  up: number;
+  gateRadius: number;
+  /** 지금 위치 그대로 통과하면 성공하는지 */
+  aligned: boolean;
+}
+
+/** 아직 통과하지 않은 가장 가까운 게이트로 가는 길을 알려준다 (HUD 안내용) */
+export function nextGateGuide(sim: SimState): GateGuide | null {
+  const field = sim.world.fields.find((f) => !f.resolved && f.position.z > sim.pos.z);
+  if (!field) return null;
+  const dx = field.position.x - sim.pos.x;
+  const dy = field.position.y - sim.pos.y;
+  return {
+    distance: field.position.z - sim.pos.z,
+    right: dx * SCREEN_RIGHT_X,
+    up: dy,
+    gateRadius: field.gateRadius,
+    aligned: Math.hypot(dx, dy) <= field.gateRadius,
+  };
 }

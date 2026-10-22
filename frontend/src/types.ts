@@ -48,11 +48,21 @@ export interface FieldInfo {
   massRatio: number;
 }
 
+export interface GateGuideSnapshot {
+  distance: number;
+  right: number;
+  up: number;
+  gateRadius: number;
+  aligned: boolean;
+}
+
 export interface HudSnapshot {
   scoreMeters: number;
   fuel: number;
   mass: number;
   misses: number;
+  streak: number;
+  gate: GateGuideSnapshot | null;
   forwardSpeed: number;
   lateralSpeed: number;
   fieldInfo: FieldInfo | null;

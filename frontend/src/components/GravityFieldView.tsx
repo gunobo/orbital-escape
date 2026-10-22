@@ -17,8 +17,8 @@ export default function GravityFieldView({ data }: Props) {
 
   useFrame((_state, delta) => {
     if (coreRef.current) {
-      coreRef.current.rotation.y += delta * 0.6;
-      coreRef.current.rotation.x += delta * 0.25;
+      coreRef.current.rotation.y += delta * 0.25;
+      coreRef.current.rotation.x += delta * 0.1;
     }
     if (ringMatRef.current) {
       const color = !data.resolved ? NEUTRAL_COLOR : data.passed ? PASSED_COLOR : MISSED_COLOR;
@@ -30,16 +30,20 @@ export default function GravityFieldView({ data }: Props) {
 
   return (
     <group position={[data.position.x, data.position.y, data.position.z]}>
-      <mesh>
-        <sphereGeometry args={[data.influenceRadius, 24, 24]} />
-        <meshBasicMaterial color="#7c5cff" transparent opacity={0.05} wireframe />
-      </mesh>
+      {/* 영향 범위: 시야를 가리는 큰 구 대신, 진행 방향에 수직인 옅은 고리 두 개로 표시 */}
+      {[0.5, 1].map((ratio) => (
+        <mesh key={ratio}>
+          <torusGeometry args={[data.influenceRadius * ratio, 0.05, 6, 64]} />
+          <meshBasicMaterial color="#7c5cff" transparent opacity={0.22} depthWrite={false} />
+        </mesh>
+      ))}
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[1.1 + strength * 0.4, 1]} />
         <meshStandardMaterial color="#3a2b6e" emissive="#7c5cff" emissiveIntensity={0.6} flatShading />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[data.gateRadius, 0.12, 12, 40]} />
+      {/* 게이트 고리: 플레이어 쪽(-z)을 정면으로 바라보게 둔다 */}
+      <mesh>
+        <torusGeometry args={[data.gateRadius, 0.18, 12, 48]} />
         <meshBasicMaterial ref={ringMatRef} color={NEUTRAL_COLOR} />
       </mesh>
     </group>

@@ -4,7 +4,7 @@ import { api, ApiError, loadToken, saveToken } from "./api";
 import type { ApiUser, AppConfig, Leaderboard as LeaderboardData, ScoreResult } from "./api";
 import AccountPanel from "./components/AccountPanel";
 import GameCanvas from "./components/GameCanvas";
-import GameOverScreen from "./components/GameOverScreen";
+import GameOverScreen, { type SubmitState } from "./components/GameOverScreen";
 import HUD from "./components/HUD";
 import Leaderboard from "./components/Leaderboard";
 import SettingsScreen from "./components/SettingsScreen";
@@ -16,12 +16,12 @@ const INITIAL_HUD: HudSnapshot = {
   fuel: 100,
   mass: 1,
   misses: 0,
+  streak: 0,
+  gate: null,
   forwardSpeed: 0,
   lateralSpeed: 0,
   fieldInfo: null,
 };
-
-type SubmitState = "idle" | "submitting" | "done" | "error" | "anonymous";
 
 function readBest(): number {
   try {
@@ -57,8 +57,10 @@ export default function App() {
 
   const best = Math.max(localBest, user?.best_score ?? 0);
 
+  const loadConfig = () => api.config().then(setConfig).catch(() => setConfig(null));
+
   useEffect(() => {
-    api.config().then(setConfig).catch(() => setConfig(null));
+    loadConfig();
   }, []);
 
   useEffect(() => {
@@ -131,20 +133,30 @@ export default function App() {
       }
     }
     setPhase("gameover");
+    submitScore(score);
+  };
 
-    if (token && user?.nickname) {
-      setSubmitState("submitting");
-      api
-        .submitScore(token, score)
-        .then((res) => {
-          setServerResult(res);
-          setUser((u) => (u ? { ...u, best_score: res.best_score } : u));
-          setSubmitState("done");
-        })
-        .catch(() => setSubmitState("error"));
-    } else {
-      setSubmitState("anonymous");
-    }
+  const submitScore = (score: number) => {
+    if (!token) return setSubmitState("no-login");
+    if (!user) return setSubmitState("error");
+    if (!user.nickname) return setSubmitState("no-nickname");
+
+    setSubmitState("submitting");
+    api
+      .submitScore(token, score)
+      .then((res) => {
+        setServerResult(res);
+        setUser((u) => (u ? { ...u, best_score: res.best_score } : u));
+        setSubmitState("done");
+      })
+      .catch((e) => {
+        if (e instanceof ApiError && e.status === 401) {
+          handleLogout();
+          setSubmitState("expired");
+        } else {
+          setSubmitState("error");
+        }
+      });
   };
 
   const leaderboardSlot = <Leaderboard data={board} myNickname={user?.nickname} />;
@@ -164,6 +176,7 @@ export default function App() {
               onDevLogin={handleDevLogin}
               onSetNickname={handleSetNickname}
               onLogout={handleLogout}
+              onRetryConfig={loadConfig}
             />
           }
           onStart={handleStart}
@@ -191,6 +204,7 @@ export default function App() {
           submitState={submitState}
           leaderboardSlot={leaderboardSlot}
           onRestart={() => setPhase("settings")}
+          onRetrySubmit={() => submitScore(result.score)}
         />
       )}
     </div>

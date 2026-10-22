@@ -10,6 +10,7 @@ interface Props {
   onDevLogin: (name: string) => void;
   onSetNickname: (nickname: string) => Promise<boolean>;
   onLogout: () => void;
+  onRetryConfig: () => void;
 }
 
 export default function AccountPanel({
@@ -20,6 +21,7 @@ export default function AccountPanel({
   onDevLogin,
   onSetNickname,
   onLogout,
+  onRetryConfig,
 }: Props) {
   const [nickname, setNickname] = useState("");
   const [devName, setDevName] = useState("tester");
@@ -46,9 +48,20 @@ export default function AccountPanel({
           </div>
         )}
         {config && !config.google_client_id && !config.dev_auth && (
-          <p className="hint">로그인이 설정되지 않아 로컬 기록만 저장됩니다.</p>
+          <p className="warn">
+            ⚠ 서버에 로그인 방법이 설정되어 있지 않아 랭킹에 등록할 수 없습니다.
+            <br />
+            (로컬 테스트: 백엔드를 DEV_AUTH_ENABLED=true 로 실행 / 운영: GOOGLE_CLIENT_ID 설정)
+          </p>
         )}
-        {!config && <p className="hint">서버에 연결할 수 없어 로컬 기록만 저장됩니다.</p>}
+        {!config && (
+          <>
+            <p className="warn">⚠ 서버(백엔드)에 연결할 수 없어 랭킹에 등록할 수 없습니다. 기록은 이 브라우저에만 저장됩니다.</p>
+            <button className="ghost-btn" onClick={onRetryConfig}>
+              다시 연결
+            </button>
+          </>
+        )}
         {error && <p className="error">{error}</p>}
       </div>
     );

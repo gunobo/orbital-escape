@@ -100,6 +100,7 @@
 
 /* HUD */
 .hud {
+  font-variant-numeric: tabular-nums;
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -308,4 +309,48 @@
 .leaderboard .score {
   color: #c6cdf0;
   font-variant-numeric: tabular-nums;
+}
+
+.warn {
+  font-size: 12.5px;
+  color: #ffb703;
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+/* 게이트 안내 */
+.gate-guide {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(10, 12, 24, 0.6);
+  border: 1px solid rgba(255, 183, 3, 0.45);
+  color: #ffd166;
+}
+
+.gate-guide.gate-ok {
+  border-color: rgba(76, 224, 138, 0.6);
+  color: #4ce08a;
+}
+
+.gate-radar {
+  width: 64px;
+  height: 64px;
+}
+
+.gate-title {
+  font-size: 12px;
+  color: #c6cdf0;
+}
+
+.gate-dir {
+  font-size: 18px;
+  font-weight: 700;
+  min-width: 130px;
 }
