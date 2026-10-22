@@ -107,14 +107,14 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 18px;
+  padding: 18px 18px 64px;
   z-index: 5;
 }
 
 .hud-top {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
 }
 
 .hud-score {
@@ -201,7 +201,9 @@
   gap: 20px;
   flex-wrap: wrap;
   overflow-y: auto;
-  padding: 16px;
+  padding: 24px 16px;
+  align-items: flex-start;
+  align-content: flex-start;
 }
 
 .side-panel {
@@ -353,4 +355,527 @@
   font-size: 18px;
   font-weight: 700;
   min-width: 130px;
+}
+
+/* ── 목숨 ─────────────────────────────────── */
+.hud-lives-box {
+  text-align: right;
+}
+
+.lives {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  font-size: 30px;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(255, 92, 108, 0.6));
+}
+
+.heart {
+  display: inline-block;
+}
+
+/* 목숨을 잃으면 하트가 흔들린다 (key 가 바뀌어 애니메이션이 다시 시작됨) */
+.lives {
+  animation: lives-shake 0.5s;
+}
+
+.heart-lost {
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+
+@keyframes lives-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px) scale(1.15); }
+  40% { transform: translateX(8px) scale(1.15); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+.lives-hint {
+  font-size: 11px;
+  color: #9aa5c9;
+  margin-top: 2px;
+}
+
+/* ── 조작 막대 / 카운트다운 / 힌트 ─────────────── */
+.control-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 96vw;
+}
+
+.cb-group {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.cb-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(124, 211, 255, 0.35);
+  background: rgba(10, 12, 24, 0.7);
+  color: #c6cdf0;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cb-btn:hover {
+  border-color: rgba(124, 211, 255, 0.8);
+}
+
+.cb-on {
+  background: rgba(124, 92, 255, 0.45);
+  border-color: #7c5cff;
+  color: #fff;
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 120px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 0 30px rgba(124, 92, 255, 0.9);
+  pointer-events: none;
+  z-index: 9;
+}
+
+.hint-toast {
+  position: absolute;
+  left: 18px;
+  top: 92px;
+  width: min(340px, 44vw);
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(14, 16, 32, 0.92);
+  border: 1px solid rgba(124, 92, 255, 0.6);
+  z-index: 8;
+  animation: hint-in 0.3s;
+  pointer-events: none;
+}
+
+.hint-warn {
+  border-color: rgba(255, 92, 108, 0.8);
+}
+
+.hint-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #ffd166;
+  margin-bottom: 4px;
+}
+
+.hint-warn .hint-title {
+  color: #ff8a8a;
+}
+
+.hint-text {
+  font-size: 12.5px;
+  color: #dfe5ff;
+  line-height: 1.55;
+}
+
+@keyframes hint-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 물리 패널 ────────────────────────────── */
+.physics-panel {
+  position: absolute;
+  top: 110px;
+  right: 14px;
+  width: 300px;
+  max-height: calc(100vh - 190px);
+  overflow-y: auto;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(10, 12, 24, 0.78);
+  border: 1px solid rgba(124, 92, 255, 0.35);
+  font-size: 12px;
+  color: #c6cdf0;
+  z-index: 6;
+}
+
+.pp-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.pp-title span {
+  font-weight: 400;
+  font-size: 11px;
+  color: #6b7394;
+}
+
+.pp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.physics-panel details {
+  border-top: 1px solid rgba(124, 92, 255, 0.2);
+  padding: 6px 0;
+}
+
+.physics-panel summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #e8f0ff;
+}
+
+.pp-lines {
+  margin-top: 6px;
+  line-height: 1.55;
+}
+
+.pp-note {
+  color: #ffd166;
+  font-size: 11.5px;
+  margin-top: 4px;
+}
+
+.pp-pair {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.pp-row {
+  margin-bottom: 4px;
+}
+
+.force-curve {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+}
+
+.mini-bar {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mini-bar-signed::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.mini-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+}
+
+.mini-bar:not(.mini-bar-signed) .mini-bar-fill {
+  left: 0;
+}
+
+/* ── 일시정지 ─────────────────────────────── */
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: rgba(3, 4, 10, 0.55);
+  overflow-y: auto;
+  padding: 24px 16px 90px;
+}
+
+.pause-card {
+  width: min(920px, 96vw);
+  padding: 24px 28px;
+  border-radius: 16px;
+  background: rgba(14, 16, 32, 0.94);
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  pointer-events: auto;
+}
+
+.pause-card h1 {
+  text-align: center;
+}
+
+.pause-card .subtitle {
+  text-align: center;
+}
+
+.pause-cols {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 24px;
+}
+
+@media (max-width: 760px) {
+  .pause-cols {
+    grid-template-columns: 1fr;
+  }
+  .physics-panel {
+    display: none;
+  }
+}
+
+.pause-card h3,
+.section-title {
+  font-size: 14px;
+  color: #7cd3ff;
+  margin: 12px 0 8px;
+  text-align: left;
+}
+
+.pause-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.concept-mini {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+  color: #c6cdf0;
+  line-height: 1.5;
+}
+
+.concept-mini li {
+  margin-bottom: 8px;
+}
+
+code {
+  background: rgba(124, 92, 255, 0.2);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #ffd166;
+  font-size: 11.5px;
+}
+
+/* ── 시작 화면 ────────────────────────────── */
+.side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.seg {
+  display: flex;
+  gap: 6px;
+}
+
+.seg button {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  background: transparent;
+  color: #c6cdf0;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.seg .seg-on {
+  background: rgba(124, 92, 255, 0.45);
+  border-color: #7c5cff;
+  color: #fff;
+}
+
+.proj-compare {
+  margin: 4px 0 12px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.proj-compare svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.proj-compare figcaption {
+  font-size: 11.5px;
+  color: #9aa5c9;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.concept-list h2,
+.learn-panel h2 {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+
+.concept-list details {
+  border-top: 1px solid rgba(124, 92, 255, 0.2);
+  padding: 6px 0;
+  font-size: 12.5px;
+  color: #c6cdf0;
+}
+
+.concept-list summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.concept-list p {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+.how {
+  color: #ffd166;
+}
+
+.badges-title {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.badges-title span {
+  font-size: 11px;
+  color: #9aa5c9;
+}
+
+.badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #9aa5c9;
+}
+
+.badge-on {
+  border-color: #4ce08a;
+  color: #4ce08a;
+  background: rgba(76, 224, 138, 0.12);
+}
+
+/* ── 게임 오버: 학습 ─────────────────────── */
+.learn-panel {
+  width: min(520px, 94vw);
+  text-align: left;
+}
+
+.summary-list {
+  margin: 0 0 14px;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: #c6cdf0;
+  line-height: 1.65;
+}
+
+.quiz {
+  border-top: 1px solid rgba(124, 92, 255, 0.3);
+  padding-top: 12px;
+}
+
+.quiz-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #9aa5c9;
+  margin-bottom: 8px;
+}
+
+.quiz-text {
+  font-size: 14px;
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+.quiz-choices {
+  display: grid;
+  gap: 6px;
+}
+
+.quiz-choice {
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e8f0ff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.quiz-choice:hover:not(:disabled) {
+  border-color: #7cd3ff;
+}
+
+.quiz-right {
+  border-color: #4ce08a;
+  background: rgba(76, 224, 138, 0.18);
+}
+
+.quiz-wrong {
+  border-color: #ff5c6c;
+  background: rgba(255, 92, 108, 0.18);
+}
+
+.quiz-dim {
+  opacity: 0.45;
+}
+
+.quiz-explain {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.quiz-explain.ok {
+  background: rgba(76, 224, 138, 0.12);
+}
+
+.quiz-explain.no {
+  background: rgba(255, 183, 3, 0.12);
+}
+
+.quiz-explain .ghost-btn {
+  margin-top: 8px;
+}
+
+.quiz-done {
+  font-size: 15px;
+  text-align: center;
+  padding: 10px;
 }

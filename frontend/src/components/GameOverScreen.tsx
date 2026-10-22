@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import type { ScoreResult } from "../api";
-import type { GameOverReason } from "../types";
+import type { ConceptId } from "../learning/concepts";
+import type { Question } from "../learning/quiz";
+import { summaryLines } from "../learning/summary";
+import type { GameOverReason, RunSummary } from "../types";
+import QuizPanel from "./QuizPanel";
 
 export type SubmitState =
   | "idle"
@@ -17,6 +21,9 @@ interface Props {
   best: number;
   serverResult: ScoreResult | null;
   submitState: SubmitState;
+  summary: RunSummary | null;
+  questions: Question[];
+  onAnswer: (concept: ConceptId, correct: boolean) => void;
   leaderboardSlot: ReactNode;
   onRestart: () => void;
   onRetrySubmit: () => void;
@@ -24,7 +31,7 @@ interface Props {
 
 const REASON_TEXT: Record<GameOverReason, string> = {
   collision: "운석과 충돌했습니다.",
-  "gate-miss": "중력장 게이트를 3번 놓쳤습니다.",
+  "gate-miss": "중력장 게이트를 3번 놓쳐 목숨을 모두 잃었습니다.",
 };
 
 const SUBMIT_TEXT: Record<SubmitState, string> = {
@@ -43,6 +50,9 @@ export default function GameOverScreen({
   best,
   serverResult,
   submitState,
+  summary,
+  questions,
+  onAnswer,
   leaderboardSlot,
   onRestart,
   onRetrySubmit,
@@ -58,9 +68,7 @@ export default function GameOverScreen({
         {serverResult && <div className="best-line">전체 {serverResult.rank}위</div>}
         <div className="best-line">최고기록: {best} m</div>
         {SUBMIT_TEXT[submitState] && (
-          <p className={submitState === "error" || submitState === "expired" ? "warn" : "hint"}>
-            {SUBMIT_TEXT[submitState]}
-          </p>
+          <p className={submitState === "error" || submitState === "expired" ? "warn" : "hint"}>{SUBMIT_TEXT[submitState]}</p>
         )}
         {submitState === "error" && (
           <button className="ghost-btn" onClick={onRetrySubmit}>
@@ -71,6 +79,19 @@ export default function GameOverScreen({
           다시 시작
         </button>
       </div>
+
+      <div className="panel learn-panel">
+        <h2>📖 이번 판에서 배운 물리</h2>
+        {summary && (
+          <ul className="summary-list">
+            {summaryLines(summary).map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+        <QuizPanel questions={questions} onAnswer={onAnswer} />
+      </div>
+
       <div className="panel side-panel">{leaderboardSlot}</div>
     </div>
   );

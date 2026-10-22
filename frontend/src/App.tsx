@@ -1,26 +1,55 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import { api, ApiError, loadToken, saveToken } from "./api";
 import type { ApiUser, AppConfig, Leaderboard as LeaderboardData, ScoreResult } from "./api";
 import AccountPanel from "./components/AccountPanel";
+import ControlBar from "./components/ControlBar";
 import GameCanvas from "./components/GameCanvas";
 import GameOverScreen, { type SubmitState } from "./components/GameOverScreen";
+import HintToast, { type Hint } from "./components/HintToast";
 import HUD from "./components/HUD";
 import Leaderboard from "./components/Leaderboard";
+import PauseOverlay from "./components/PauseOverlay";
+import PhysicsPanel from "./components/PhysicsPanel";
+import type { ControlMode } from "./components/Scene";
 import SettingsScreen from "./components/SettingsScreen";
-import { BEST_SCORE_KEY } from "./constants/physics";
-import type { GameOverReason, GamePhase, HudSnapshot, ObstacleSettings } from "./types";
+import { VIEW_ORDER, type ViewId } from "./constants/camera";
+import { BEST_SCORE_KEY, FUEL_MAX, MAX_MISSES, OIL_TRIGGER_THRESHOLD } from "./constants/physics";
+import type { ConceptId } from "./learning/concepts";
+import { loadProgress, recordAnswer, type Progress } from "./learning/progress";
+import { pickQuiz, type Question } from "./learning/quiz";
+import type { GameOverReason, GamePhase, HudSnapshot, ObstacleSettings, RunSummary } from "./types";
 
 const INITIAL_HUD: HudSnapshot = {
   scoreMeters: 0,
-  fuel: 100,
-  mass: 1,
+  fuel: FUEL_MAX,
+  mass: 1.6,
   misses: 0,
   streak: 0,
   gate: null,
-  forwardSpeed: 0,
-  lateralSpeed: 0,
-  fieldInfo: null,
+  physics: {
+    mass: 1.6,
+    inertialControl: true,
+    field: null,
+    vForward: 0,
+    vUp: 0,
+    vRight: 0,
+    thrustForce: 0,
+    thrustAccel: 0,
+    ke: 0,
+    pe: 0,
+    engineWork: 0,
+    brakeLoss: 0,
+  },
+};
+
+const CONTROL_MODE_KEY = "orbital-escape-control-mode";
+const VIEW_KEYS: Record<string, ViewId> = {
+  Digit1: "chase",
+  Digit2: "high",
+  Digit3: "top",
+  Digit4: "side",
+  Digit5: "cockpit",
 };
 
 function readBest(): number {
@@ -29,6 +58,14 @@ function readBest(): number {
     return raw ? Number(raw) : 0;
   } catch {
     return 0;
+  }
+}
+
+function readControlMode(): ControlMode {
+  try {
+    return localStorage.getItem(CONTROL_MODE_KEY) === "keyboard" ? "keyboard" : "mouse";
+  } catch {
+    return "mouse";
   }
 }
 
@@ -44,6 +81,8 @@ export default function App() {
   });
   const [hud, setHud] = useState<HudSnapshot>(INITIAL_HUD);
   const [result, setResult] = useState<{ score: number; reason: GameOverReason } | null>(null);
+  const [summary, setSummary] = useState<RunSummary | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [runId, setRunId] = useState(0);
   const [localBest, setLocalBest] = useState<number>(readBest);
 
@@ -55,8 +94,24 @@ export default function App() {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [serverResult, setServerResult] = useState<ScoreResult | null>(null);
 
-  const best = Math.max(localBest, user?.best_score ?? 0);
+  const [progress, setProgress] = useState<Progress>(loadProgress);
+  const [view, setView] = useState<ViewId>("chase");
+  const [paused, setPaused] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [showPhysics, setShowPhysics] = useState(true);
+  const [controlMode, setControlModeState] = useState<ControlMode>(readControlMode);
+  const [inertialControl, setInertialControl] = useState(true);
+  const [hint, setHint] = useState<Hint | null>(null);
 
+  const pausedRef = useRef(false);
+  const shownHints = useRef(new Set<string>());
+  const hintTimer = useRef<number | undefined>(undefined);
+  const prevHud = useRef<HudSnapshot | null>(null);
+
+  const best = Math.max(localBest, user?.best_score ?? 0);
+  const frozen = paused || countdown !== null;
+
+  // ── 서버 연결 / 로그인 ────────────────────────────────────────
   const loadConfig = () => api.config().then(setConfig).catch(() => setConfig(null));
 
   useEffect(() => {
@@ -112,28 +167,171 @@ export default function App() {
     setUser(null);
   };
 
+  // ── 일시정지 / 시점 / 조종 방식 ──────────────────────────────
+  const setPausedBoth = useCallback((value: boolean) => {
+    pausedRef.current = value;
+    setPaused(value);
+  }, []);
+
+  const pauseGame = useCallback(() => {
+    setCountdown(null);
+    setPausedBoth(true);
+  }, [setPausedBoth]);
+
+  const resumeGame = useCallback(() => {
+    setPausedBoth(false);
+    setCountdown(2); // 다시 시작하기 전에 마음의 준비를 할 시간
+  }, [setPausedBoth]);
+
+  const togglePause = useCallback(() => {
+    if (pausedRef.current) resumeGame();
+    else pauseGame();
+  }, [pauseGame, resumeGame]);
+
+  const setControlMode = useCallback((mode: ControlMode) => {
+    setControlModeState(mode);
+    try {
+      localStorage.setItem(CONTROL_MODE_KEY, mode);
+    } catch {
+      /* 무시 */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (countdown === null || paused) return;
+    const t = window.setTimeout(() => setCountdown((c) => (c !== null && c > 1 ? c - 1 : null)), 1000);
+    return () => window.clearTimeout(t);
+  }, [countdown, paused]);
+
+  useEffect(() => {
+    if (phase !== "playing") return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (e.code === "Space" || e.code === "KeyP" || e.code === "Escape") {
+        e.preventDefault();
+        togglePause();
+      } else if (e.code === "KeyC") {
+        setView((v) => VIEW_ORDER[(VIEW_ORDER.indexOf(v) + 1) % VIEW_ORDER.length]);
+      } else if (VIEW_KEYS[e.code]) {
+        setView(VIEW_KEYS[e.code]);
+      } else if (e.code === "KeyH") {
+        setShowPhysics((v) => !v);
+      } else if (e.code === "KeyZ") {
+        setInertialControl((v) => !v);
+      } else if (e.code === "KeyM") {
+        setControlModeState((m) => {
+          const next: ControlMode = m === "mouse" ? "keyboard" : "mouse";
+          try {
+            localStorage.setItem(CONTROL_MODE_KEY, next);
+          } catch {
+            /* 무시 */
+          }
+          return next;
+        });
+      }
+    };
+    // 포커스된 버튼이 Space로 눌리지 않게 한다
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") e.preventDefault();
+    };
+    const autoPause = () => {
+      if (!pausedRef.current) pauseGame();
+    };
+    const onVisibility = () => {
+      if (document.hidden) autoPause();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", autoPause);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", autoPause);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [phase, togglePause, pauseGame]);
+
+  // ── 학습 힌트: 해당 개념을 처음 겪는 순간에 한 번 알려 준다 ──────
+  const showHint = useCallback((next: Hint, ms = 8000, once = true) => {
+    if (once) {
+      if (shownHints.current.has(next.id)) return;
+      shownHints.current.add(next.id);
+    }
+    setHint(next);
+    window.clearTimeout(hintTimer.current);
+    hintTimer.current = window.setTimeout(() => setHint(null), ms);
+  }, []);
+
+  const handleHud = useCallback(
+    (h: HudSnapshot) => {
+      setHud(h);
+      const prev = prevHud.current;
+      prevHud.current = h;
+
+      if (prev && h.misses > prev.misses) {
+        const left = Math.max(0, MAX_MISSES - h.misses);
+        showHint(
+          { id: `life-${h.misses}`, title: `💔 게이트를 놓쳤어요! 남은 목숨 ${left}개`, text: "고리 한가운데를 지나가야 해요. 다음 게이트 안내(레이더)를 보세요.", tone: "warn" },
+          4000,
+          false,
+        );
+      }
+      if (h.physics.field) {
+        showHint({
+          id: "gravity",
+          title: "🪐 중력장 진입! 만유인력 F = G·M·m / r²",
+          text: "가까울수록 힘이 커져요 (거리가 절반이면 4배). 보라색 화살표가 나를 당기는 힘, 주황색이 행성이 받는 반작용이에요 — 길이가 같죠? (작용-반작용)",
+        });
+      }
+      if (h.physics.thrustForce > 0) {
+        showHint({
+          id: "thrust",
+          title: "🚀 F = ma",
+          text: "엔진이 힘 F를 내면 가속도 a = F/m 로 움직여요. 질량이 작을수록 더 잘 가속돼요. (하늘색 화살표 = 엔진 힘)",
+        });
+      }
+      if (h.fuel <= OIL_TRIGGER_THRESHOLD) {
+        showHint({
+          id: "fuel",
+          title: "⛽ 연료가 거의 없어요!",
+          text: "주황색 기름 아이템이 곧 나타나요. 먹으면 연료와 함께 질량이 늘어서 같은 힘으로는 가속도가 작아져요 (a = F/m).",
+        });
+      }
+      if (prev && h.fuel - prev.fuel > 30) {
+        showHint({
+          id: "oil",
+          title: "🛢 기름을 먹었어요 → 질량 증가",
+          text: `질량 ${prev.mass.toFixed(2)} → ${h.mass.toFixed(2)}. 중력(힘)은 질량에 비례해 커지지만, 중력 가속도는 그대로예요 (등가원리).`,
+        });
+      }
+    },
+    [showHint],
+  );
+
+  // ── 게임 시작 / 종료 ─────────────────────────────────────────
   const handleStart = (settings: ObstacleSettings) => {
     setObstacleSettings(settings);
     setResult(null);
+    setSummary(null);
+    setQuestions([]);
     setServerResult(null);
     setSubmitState("idle");
     setHud(INITIAL_HUD);
+    prevHud.current = null;
+    setInertialControl(true);
+    setPausedBoth(false);
+    setCountdown(3);
     setRunId((id) => id + 1);
     setPhase("playing");
-  };
-
-  const handleGameOver = (score: number, reason: GameOverReason) => {
-    setResult({ score, reason });
-    if (score > localBest) {
-      setLocalBest(score);
-      try {
-        localStorage.setItem(BEST_SCORE_KEY, String(score));
-      } catch {
-        /* 저장소 사용 불가 시 무시 */
-      }
-    }
-    setPhase("gameover");
-    submitScore(score);
+    showHint(
+      {
+        id: "start",
+        title: "🎮 시작!",
+        text: "마우스로 화면의 고리를 가리키면 우주선이 날아가요. Space 일시정지 · C 시점 전환 · H 물리 패널",
+      },
+      7000,
+    );
   };
 
   const submitScore = (score: number) => {
@@ -159,6 +357,27 @@ export default function App() {
       });
   };
 
+  const handleGameOver = (score: number, reason: GameOverReason, runSummary: RunSummary) => {
+    setResult({ score, reason });
+    setSummary(runSummary);
+    setQuestions(pickQuiz(runSummary, progress, Math.random, 3));
+    setHint(null);
+    if (score > localBest) {
+      setLocalBest(score);
+      try {
+        localStorage.setItem(BEST_SCORE_KEY, String(score));
+      } catch {
+        /* 저장소 사용 불가 시 무시 */
+      }
+    }
+    setPhase("gameover");
+    submitScore(score);
+  };
+
+  const handleAnswer = (concept: ConceptId, correct: boolean) => {
+    setProgress((p) => recordAnswer(p, concept, correct));
+  };
+
   const leaderboardSlot = <Leaderboard data={board} myNickname={user?.nickname} />;
 
   return (
@@ -167,6 +386,9 @@ export default function App() {
         <SettingsScreen
           best={best}
           leaderboardSlot={leaderboardSlot}
+          progress={progress}
+          controlMode={controlMode}
+          onControlMode={setControlMode}
           accountSlot={
             <AccountPanel
               config={config}
@@ -188,10 +410,30 @@ export default function App() {
           <GameCanvas
             key={runId}
             obstacleSettings={obstacleSettings}
-            onHud={setHud}
+            view={view}
+            frozen={frozen}
+            controlMode={controlMode}
+            inertialControl={inertialControl}
+            showArrows={showPhysics}
+            onHud={handleHud}
             onGameOver={handleGameOver}
           />
           <HUD hud={hud} best={best} />
+          <ControlBar
+            view={view}
+            onView={setView}
+            controlMode={controlMode}
+            onControlMode={setControlMode}
+            showPhysics={showPhysics}
+            onTogglePhysics={() => setShowPhysics((v) => !v)}
+            inertialControl={inertialControl}
+            onToggleInertial={() => setInertialControl((v) => !v)}
+            onPause={pauseGame}
+          />
+          {showPhysics && <PhysicsPanel p={hud.physics} />}
+          <HintToast hint={hint} />
+          {countdown !== null && !paused && <div className="countdown">{countdown}</div>}
+          {paused && <PauseOverlay onResume={resumeGame} onQuit={() => setPhase("settings")} />}
         </>
       )}
 
@@ -202,6 +444,9 @@ export default function App() {
           best={best}
           serverResult={serverResult}
           submitState={submitState}
+          summary={summary}
+          questions={questions}
+          onAnswer={handleAnswer}
           leaderboardSlot={leaderboardSlot}
           onRestart={() => setPhase("settings")}
           onRetrySubmit={() => submitScore(result.score)}

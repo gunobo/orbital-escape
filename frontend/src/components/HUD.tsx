@@ -32,6 +32,20 @@ function guideText(gate: NonNullable<HudSnapshot["gate"]>): string {
   return parts.join("  ");
 }
 
+/** 남은 목숨: 게이트를 놓칠 때마다 하나씩 줄고, 0이 되면 끝난다 */
+function Lives({ misses }: { misses: number }) {
+  const left = Math.max(0, C.MAX_MISSES - misses);
+  return (
+    <div className="lives" key={misses} aria-label={`남은 목숨 ${left}개`}>
+      {Array.from({ length: C.MAX_MISSES }, (_, i) => (
+        <span key={i} className={i < left ? "heart" : "heart heart-lost"}>
+          {i < left ? "❤️" : "🖤"}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export default function HUD({ hud, best }: Props) {
   const fuelPct = Math.round((hud.fuel / C.FUEL_MAX) * 100);
   const fuelLow = hud.fuel <= C.OIL_TRIGGER_THRESHOLD;
@@ -39,11 +53,20 @@ export default function HUD({ hud, best }: Props) {
   return (
     <div className="hud">
       <div className="hud-top">
-        <div className="hud-score">
-          <span className="hud-score-value">{hud.scoreMeters}</span>
-          <span className="hud-score-unit">m</span>
+        <div>
+          <div className="hud-score">
+            <span className="hud-score-value">{hud.scoreMeters}</span>
+            <span className="hud-score-unit">m</span>
+          </div>
+          <div className="hud-best">최고기록 {best} m</div>
         </div>
-        <div className="hud-best">최고기록 {best} m</div>
+        <div className="hud-lives-box">
+          <Lives misses={hud.misses} />
+          <div className="lives-hint">게이트를 놓치면 목숨 -1 · 운석 충돌은 즉시 종료</div>
+          {C.MISS_RECOVER_STREAK > 0 && hud.misses > 0 && (
+            <div className="lives-hint">연속 통과 {hud.streak}/{C.MISS_RECOVER_STREAK} → 목숨 회복</div>
+          )}
+        </div>
       </div>
 
       {hud.gate && (
@@ -67,27 +90,10 @@ export default function HUD({ hud, best }: Props) {
           </div>
         </div>
         <div className="hud-row hud-stats">
-          <span>질량 ×{hud.mass.toFixed(2)}</span>
-          <span>
-            게이트 미스 {hud.misses}/{C.MAX_MISSES}
-            {C.MISS_RECOVER_STREAK > 0 && hud.misses > 0 && ` · 연속 ${hud.streak}/${C.MISS_RECOVER_STREAK}`}
-          </span>
+          <span>질량 {hud.mass.toFixed(2)}</span>
+          <span>연료 {Math.round(hud.fuel)}</span>
         </div>
-        <div className="hud-row hud-stats">
-          <span>수평(전진) 속도 {hud.forwardSpeed.toFixed(1)} m/s</span>
-          <span>수직(횡) 속도 {hud.lateralSpeed.toFixed(1)} m/s</span>
-        </div>
-        {hud.fieldInfo && (
-          <div className="hud-field-info">
-            힘: 서로 동일(뉴턴 3법칙) · 가속도는 질량에 반비례 → 나 a≈
-            {hud.fieldInfo.playerAccel.toFixed(1)} m/s², 행성 a≈
-            {hud.fieldInfo.fieldAccel.toExponential(2)} m/s² (질량비 1:
-            {Math.round(hud.fieldInfo.massRatio).toLocaleString()})
-          </div>
-        )}
       </div>
-
-      <div className="hud-controls-hint">방향키/WASD 이동 · Shift 부스트</div>
     </div>
   );
 }

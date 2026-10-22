@@ -62,9 +62,12 @@ export function spawnFields(world: WorldState, playerZ: number): void {
 }
 
 /**
- * 운석은 "플레이어가 도착할 시점에" 플레이 영역을 지나가도록 역산해서 소환한다.
- * (멀리서 소환해 계속 떨어뜨리면 도착 전에 영역 밖으로 사라져 낙하 속도 설정이 의미가 없어진다.)
- * 낙하 속도가 빠를수록 더 높은 곳에서 떨어지기 시작하므로 시야에 들어온 뒤의 반응 시간이 짧아진다.
+ * 운석은 자유낙하(수직: 등가속도 운동)와 수평 등속 운동이 합쳐진 포물선 운동을 한다.
+ *   x(t) = x0 + vx·t            (수평: 힘이 없으므로 등속)
+ *   y(t) = y0 − v0·t − ½·g·t²   (수직: 중력 가속도 g로 등가속도)
+ * 두 운동은 서로 독립이라, 같은 높이에서 떨어뜨린 운석과 수평으로 던진 운석은 같은 시각에 같은 높이에 있다.
+ *
+ * 운석이 "플레이어가 도착할 시점에" 플레이 영역을 지나가도록 위 식을 거꾸로 풀어 출발 위치를 정한다.
  */
 export function spawnObstacles(
   world: WorldState,
@@ -73,14 +76,18 @@ export function spawnObstacles(
   settings: ObstacleSettings,
 ): void {
   const { rng } = world;
-  const horizon = playerPos.z + C.SPAWN_AHEAD_Z;
+  const horizon = playerPos.z + C.OBSTACLE_SPAWN_AHEAD_Z;
   while (world.nextObstacleZ < horizon) {
     const z = world.nextObstacleZ;
     world.nextObstacleZ += randRange(rng, C.OBSTACLE_SPAWN_INTERVAL_MIN, C.OBSTACLE_SPAWN_INTERVAL_MAX);
     if (world.fields.some((f) => z > f.position.z - C.OBSTACLE_GATE_CLEAR_BEFORE && z < f.position.z + C.OBSTACLE_GATE_CLEAR_AFTER)) {
       continue;
     }
-    const eta = Math.max(z - playerPos.z, 1) / Math.max(playerVel.z, C.MIN_FORWARD_SPEED);
+    const dz = Math.max(z - playerPos.z, 1);
+    // 도착 시간 = 거리 / 평균 속도 (순항 속도가 거리에 따라 올라가는 것을 반영)
+    const targetSpeed = Math.min(C.CRUISE_SPEED_BASE + C.CRUISE_SPEED_GAIN_PER_METER * (playerPos.z + dz / 2), C.CRUISE_SPEED_MAX);
+    const eta = dz / Math.max((Math.max(playerVel.z, C.MIN_FORWARD_SPEED) + targetSpeed) / 2, 1);
+
     const aimed = rng() < C.OBSTACLE_AIM_PROB;
     const targetX = aimed
       ? clamp(playerPos.x + randRange(rng, -6, 6), -C.OBSTACLE_AREA_HALF_WIDTH, C.OBSTACLE_AREA_HALF_WIDTH)
@@ -89,12 +96,17 @@ export function spawnObstacles(
       ? clamp(playerPos.y + randRange(rng, -4, 4), -C.OBSTACLE_AREA_HALF_HEIGHT, C.OBSTACLE_AREA_HALF_HEIGHT)
       : randRange(rng, -C.OBSTACLE_AREA_HALF_HEIGHT, C.OBSTACLE_AREA_HALF_HEIGHT);
     const vx = (rng() < 0.5 ? -1 : 1) * settings.horizontalSpeed;
-    const vy = -settings.verticalSpeed;
+    const v0 = settings.verticalSpeed;
     world.obstacles.push({
       id: world.idSeq++,
-      position: { x: targetX - vx * eta, y: targetY - vy * eta, z },
-      velocity: { x: vx, y: vy, z: 0 },
+      position: {
+        x: targetX - vx * eta,
+        y: targetY + v0 * eta + 0.5 * C.OBSTACLE_GRAVITY * eta * eta,
+        z,
+      },
+      velocity: { x: vx, y: -v0, z: 0 },
       radius: C.OBSTACLE_RADIUS,
+      age: 0,
     });
   }
 }
@@ -119,10 +131,14 @@ export function maybeSpawnOil(world: WorldState, playerPos: Vec3, fuel: number, 
   world.lastOilTimeSec = nowSec;
 }
 
+/** 수평은 등속, 수직은 중력 가속도 g (등가속도 운동). 두 축은 서로 영향을 주지 않는다. */
 export function stepObstacles(world: WorldState, dt: number): void {
+  const g = C.OBSTACLE_GRAVITY;
   for (const o of world.obstacles) {
+    o.age += dt;
     o.position.x += o.velocity.x * dt;
-    o.position.y += o.velocity.y * dt;
+    o.position.y += o.velocity.y * dt - 0.5 * g * dt * dt;
+    o.velocity.y -= g * dt;
   }
 }
 

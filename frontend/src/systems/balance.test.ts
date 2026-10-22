@@ -69,7 +69,7 @@ describe.skipIf(!import.meta.env.VITE_BALANCE)("balance report", () => {
       }
     }
     console.log(
-      `\n[balance] runs=${RUNS} mass+${C.PLAYER_MASS_INCREMENT}(max ${C.PLAYER_MASS_MAX}) thrust=${C.BASE_THRUST_FORCE} gate=${C.GRAVITY_FIELD_GATE_RADIUS} mu=${C.GRAVITY_FIELD_MU_BASE}+${C.GRAVITY_FIELD_MU_GAIN_PER_METER}z\n`,
+      `\n[balance] runs=${RUNS} fuelMass=${C.FUEL_MASS_PER_UNIT}/unit thrust=${C.BASE_THRUST_FORCE} gate=${C.GRAVITY_FIELD_GATE_RADIUS} mu=${C.GRAVITY_FIELD_MU_BASE}+${C.GRAVITY_FIELD_MU_GAIN_PER_METER}z\n`,
     );
     console.table(rows);
   }, 600_000);

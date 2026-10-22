@@ -31,3 +31,16 @@ export function gravityAccelToward(from: Vec3, to: Vec3, mu: number): Vec3 {
     z: (dz / rRaw) * accelMag,
   };
 }
+
+/**
+ * 중력 퍼텐셜 에너지(단위 질량당). 힘이 영향 반경 R 밖에서 0이 되므로, 에너지가 끊기지 않도록
+ * R에서 0이 되게 맞춘다. 최소 반경(rc) 안쪽에서는 힘이 일정(mu/rc²)하다.
+ * 반지름만의 함수인 중심력은 보존력이라서 "운동에너지 + 퍼텐셜 에너지 = 일정"이 성립한다.
+ */
+export function gravityPotential(r: number, mu: number, influenceRadius: number): number {
+  if (r >= influenceRadius) return 0;
+  const rc = GRAVITY_MIN_R;
+  const atRc = -mu / rc + mu / influenceRadius;
+  if (r >= rc) return -mu / r + mu / influenceRadius;
+  return atRc - (mu / (rc * rc)) * (rc - r);
+}
