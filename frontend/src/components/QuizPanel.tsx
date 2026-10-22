@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CONCEPT_BY_ID, type ConceptId } from "../learning/concepts";
 import type { Question } from "../learning/quiz";
+import { ConceptIcon } from "./Icons";
 
 interface Props {
   questions: Question[];
@@ -18,7 +19,7 @@ export default function QuizPanel({ questions, onAnswer }: Props) {
     return (
       <div className="quiz">
         <div className="quiz-done">
-          복습 완료! {questions.length}문제 중 <b>{score}</b>문제 정답 🎉
+          복습 끝. {questions.length}문제 중 <b>{score}</b>문제 맞혔어요.
         </div>
       </div>
     );
@@ -39,10 +40,10 @@ export default function QuizPanel({ questions, onAnswer }: Props) {
     <div className="quiz">
       <div className="quiz-head">
         <span>
-          📝 복습 퀴즈 {index + 1}/{questions.length}
+          복습 퀴즈 {index + 1}/{questions.length}
         </span>
         <span className="quiz-concept">
-          {CONCEPT_BY_ID[q.concept].icon} {CONCEPT_BY_ID[q.concept].title}
+          <ConceptIcon id={q.concept} size={14} /> {CONCEPT_BY_ID[q.concept].title}
         </span>
       </div>
       <div className="quiz-text">{q.text}</div>

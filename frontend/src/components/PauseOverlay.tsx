@@ -1,4 +1,6 @@
+import { Pause } from "@phosphor-icons/react";
 import { CONCEPTS } from "../learning/concepts";
+import { ConceptIcon } from "./Icons";
 
 interface Props {
   onResume: () => void;
@@ -9,7 +11,9 @@ export default function PauseOverlay({ onResume, onQuit }: Props) {
   return (
     <div className="pause-overlay">
       <div className="pause-card">
-        <h1>⏸ 일시정지</h1>
+        <h1>
+          <Pause size={26} weight="fill" aria-hidden /> 일시정지
+        </h1>
 
         <ul className="keys">
           <li><kbd>마우스</kbd> 고리를 가리키기</li>
@@ -22,7 +26,7 @@ export default function PauseOverlay({ onResume, onQuit }: Props) {
         <div className="concept-chips">
           {CONCEPTS.map((c) => (
             <span key={c.id} title={c.summary}>
-              {c.icon} {c.title} <code>{c.formula}</code>
+              <ConceptIcon id={c.id} size={14} /> {c.title} <code>{c.formula}</code>
             </span>
           ))}
         </div>

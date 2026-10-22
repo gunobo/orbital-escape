@@ -1,4 +1,5 @@
 import { OBSTACLE_GRAVITY } from "../constants/physics";
+import { COLORS } from "../constants/theme";
 
 interface Props {
   /** 처음 아래로 떨어지는 속도(m/s) */
@@ -31,19 +32,19 @@ export default function ProjectileCompare({ v0, vx }: Props) {
   return (
     <figure className="proj-compare">
       <svg viewBox={`0 0 ${W} ${H}`}>
-        <text x={dropX} y={H - 6} textAnchor="middle" fontSize="10" fill="#c6cdf0">
+        <text x={dropX} y={H - 6} textAnchor="middle" fontSize="10" fill={COLORS.text}>
           자유낙하
         </text>
-        <text x={throwX + 55} y={H - 6} textAnchor="middle" fontSize="10" fill="#c6cdf0">
+        <text x={throwX + 55} y={H - 6} textAnchor="middle" fontSize="10" fill={COLORS.text}>
           수평투사 (v = {vx.toFixed(1)} m/s)
         </text>
         {times.map((t) => {
           const y = TOP + yAt(t) * ys;
           return (
             <g key={t}>
-              <line x1={dropX} y1={y} x2={throwX + vx * t * xs} y2={y} stroke="rgba(255,255,255,0.22)" strokeDasharray="3 3" />
-              <circle cx={dropX} cy={y} r="4.5" fill="#ffb703" />
-              <circle cx={throwX + vx * t * xs} cy={y} r="4.5" fill="#4ce08a" />
+              <line x1={dropX} y1={y} x2={throwX + vx * t * xs} y2={y} stroke={COLORS.line} strokeDasharray="3 3" />
+              <circle cx={dropX} cy={y} r="4.5" fill={COLORS.accent} />
+              <circle cx={throwX + vx * t * xs} cy={y} r="4.5" fill={COLORS.reaction} />
             </g>
           );
         })}

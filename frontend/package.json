@@ -12,6 +12,7 @@
     "balance": "VITE_BALANCE=1 vitest run src/systems/balance.test.ts --reporter=verbose"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@react-oauth/google": "^0.13.5",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",

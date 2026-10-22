@@ -38,8 +38,8 @@ const SUBMIT_TEXT: Record<SubmitState, string> = {
   idle: "",
   submitting: "랭킹 전송 중...",
   done: "",
-  error: "⚠ 서버 연결 안 됨 · 랭킹 미등록",
-  expired: "⚠ 로그인 만료 · 다시 로그인하세요",
+  error: "서버에 연결되지 않아 랭킹에 등록하지 못했어요",
+  expired: "로그인이 만료됐어요. 다시 로그인하세요",
   "no-login": "로그인하면 랭킹에 등록돼요",
   "no-nickname": "닉네임을 정하면 랭킹에 등록돼요",
 };
@@ -64,7 +64,7 @@ export default function GameOverScreen({
         <h1>궤도 이탈</h1>
         <p className="subtitle">{REASON_TEXT[reason]}</p>
         <div className="score-result">{score} m</div>
-        {isNewBest && <div className="new-best">🏆 신기록!</div>}
+        {isNewBest && <div className="new-best">신기록</div>}
         {serverResult && <div className="best-line">전체 {serverResult.rank}위</div>}
         <div className="best-line">최고기록: {best} m</div>
         {SUBMIT_TEXT[submitState] && (
@@ -81,7 +81,7 @@ export default function GameOverScreen({
       </div>
 
       <div className="panel learn-panel">
-        <h2>📖 이번 판에서 배운 물리</h2>
+        <h2>이번 판에서 배운 물리</h2>
         {summary && (
           <ul className="summary-list">
             {summaryLines(summary).map((line) => (

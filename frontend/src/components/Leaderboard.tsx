@@ -8,7 +8,7 @@ interface Props {
 export default function Leaderboard({ data, myNickname }: Props) {
   return (
     <div className="leaderboard">
-      <h2>🏆 랭킹</h2>
+      <h2>랭킹</h2>
       {!data && <p className="hint">랭킹을 불러올 수 없습니다.</p>}
       {data && data.entries.length === 0 && <p className="hint">아직 기록이 없습니다.</p>}
       {data && data.entries.length > 0 && (

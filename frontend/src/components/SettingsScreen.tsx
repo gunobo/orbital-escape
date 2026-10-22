@@ -1,8 +1,10 @@
+import { Cursor, Keyboard } from "@phosphor-icons/react";
 import { useState, type ReactNode } from "react";
 import { CONCEPTS } from "../learning/concepts";
 import type { Progress } from "../learning/progress";
 import type { ObstacleSettings } from "../types";
 import ConceptBadges from "./ConceptBadges";
+import { ConceptIcon } from "./Icons";
 import ProjectileCompare from "./ProjectileCompare";
 import type { ControlMode } from "./Scene";
 
@@ -42,15 +44,15 @@ export default function SettingsScreen({
           </label>
           <div className="seg">
             <button className={controlMode === "mouse" ? "seg-on" : ""} onClick={() => onControlMode("mouse")}>
-              🖱 마우스 (쉬움)
+              <Cursor size={15} weight="fill" /> 마우스 (쉬움)
             </button>
             <button className={controlMode === "keyboard" ? "seg-on" : ""} onClick={() => onControlMode("keyboard")}>
-              ⌨ 키보드
+              <Keyboard size={15} /> 키보드
             </button>
           </div>
         </div>
 
-        <h3 className="section-title">☄️ 운석 실험</h3>
+        <h3 className="section-title">운석 실험</h3>
         <div className="field">
           <label>
             낙하 속도 (수직) <span>{verticalSpeed.toFixed(1)} m/s</span>
@@ -82,13 +84,13 @@ export default function SettingsScreen({
           {CONCEPTS.map((c) => (
             <details key={c.id}>
               <summary>
-                {c.icon} {c.title}
+                <ConceptIcon id={c.id} size={14} /> {c.title}
               </summary>
               <p>{c.summary}</p>
               <p>
                 <code>{c.formula}</code>
               </p>
-              <p className="how">👀 {c.how}</p>
+              <p className="how">{c.how}</p>
             </details>
           ))}
         </div>

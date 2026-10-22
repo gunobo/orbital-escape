@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { Stars, Trail } from "@react-three/drei";
 import * as THREE from "three";
 import { VIEWS, type ViewId } from "../constants/camera";
+import { COLORS } from "../constants/theme";
 import { PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_WIDTH } from "../constants/physics";
 import { useControls } from "../hooks/useControls";
 import { clamp } from "../systems/physics";
@@ -218,15 +219,15 @@ export default function Scene({
         <Stars radius={100} depth={50} count={2500} factor={3} fade speed={0} />
       </group>
       <ambientLight intensity={0.4} />
-      <pointLight position={[0, 8, -6]} intensity={40} color="#8fd3ff" />
+      <pointLight position={[0, 8, -6]} intensity={40} color="#ffffff" />
       <directionalLight position={[6, 10, 4]} intensity={0.6} />
 
-      <Trail width={1} length={24} color="#5ad1ff" attenuation={(t) => t * t}>
+      <Trail width={1} length={24} color={COLORS.velocity} attenuation={(t) => t * t}>
         <mesh ref={playerMeshRef} geometry={shipGeometry}>
-          <meshStandardMaterial color="#e8f4ff" emissive="#3fa8ff" emissiveIntensity={0.5} />
+          <meshStandardMaterial color="#d9dbde" emissive="#6b6f76" emissiveIntensity={0.35} />
           <mesh position={[0, 0, -0.35]}>
             <boxGeometry args={[2.2, 0.06, 0.6]} />
-            <meshStandardMaterial color="#9fc8ff" emissive="#3fa8ff" emissiveIntensity={0.3} />
+            <meshStandardMaterial color="#a9adb4" emissive="#6b6f76" emissiveIntensity={0.25} />
           </mesh>
         </mesh>
       </Trail>
@@ -234,7 +235,7 @@ export default function Scene({
       {/* 마우스 조준점 */}
       <mesh ref={targetMarkerRef} visible={false} renderOrder={998}>
         <torusGeometry args={[1, 0.08, 8, 32]} />
-        <meshBasicMaterial color="#4dd0e1" transparent opacity={0.9} depthTest={false} />
+        <meshBasicMaterial color={COLORS.accent} transparent opacity={0.9} depthTest={false} />
       </mesh>
 
       <primitive object={arrows.gravity} />

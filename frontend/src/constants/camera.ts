@@ -66,7 +66,7 @@ export const VIEWS: Record<ViewId, ViewDef> = {
   },
   side: {
     label: "옆에서",
-    hint: "높이(y) 변화와 거리(z)가 보여요 — 자유낙하·포물선 관찰용 (좌우 이동은 안 보여요)",
+    hint: "높이(y) 변화와 거리(z)가 보여요. 자유낙하·포물선 관찰용이고 좌우 이동은 안 보여요",
     offset: [-34, 0, 16],
     followX: 1,
     followY: 0.85,

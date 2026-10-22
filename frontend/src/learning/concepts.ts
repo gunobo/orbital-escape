@@ -2,7 +2,6 @@ export type ConceptId = "gravity" | "newton3" | "freefall" | "newton2" | "energy
 
 export interface Concept {
   id: ConceptId;
-  icon: string;
   title: string;
   summary: string;
   formula: string;
@@ -13,7 +12,6 @@ export interface Concept {
 export const CONCEPTS: Concept[] = [
   {
     id: "gravity",
-    icon: "🪐",
     title: "만유인력",
     summary: "질량이 클수록, 거리가 가까울수록 서로 끌어당기는 힘이 커져요.",
     formula: "F = G·M·m / r²",
@@ -21,7 +19,6 @@ export const CONCEPTS: Concept[] = [
   },
   {
     id: "newton3",
-    icon: "🔁",
     title: "작용-반작용",
     summary: "힘은 항상 쌍으로 작용해요. 크기는 같고 방향은 반대! 그런데 질량이 작은 쪽이 훨씬 많이 끌려가요.",
     formula: "F(나→행성) = F(행성→나),  a = F / m",
@@ -29,15 +26,13 @@ export const CONCEPTS: Concept[] = [
   },
   {
     id: "freefall",
-    icon: "☄️",
     title: "자유낙하 vs 수평투사",
-    summary: "가만히 떨어뜨려도, 옆으로 던져도 수직 방향 운동은 똑같아요. 수평은 등속, 수직은 등가속도 — 서로 독립!",
+    summary: "가만히 떨어뜨려도, 옆으로 던져도 수직 방향 운동은 똑같아요. 수평은 등속, 수직은 등가속도이고 서로 독립이에요.",
     formula: "y = ½·g·t²,  x = v·t",
     how: "시작 화면의 비교 실험과, '옆에서' 시점에서 운석이 그리는 포물선을 관찰해 보세요.",
   },
   {
     id: "newton2",
-    icon: "🚀",
     title: "F = ma",
     summary: "같은 힘이라도 무거우면 가속도가 작아요. 기름을 먹으면 무거워지고, 연료를 태우면 가벼워져요.",
     formula: "a = F / m",
@@ -45,7 +40,6 @@ export const CONCEPTS: Concept[] = [
   },
   {
     id: "energy",
-    icon: "⚡",
     title: "에너지 보존과 손실",
     summary: "중력장에 다가가면 위치에너지가 운동에너지로 바뀌지만 합은 그대로예요. 제동하면 열·배기로 에너지가 빠져나가요(손실).",
     formula: "E = KE + PE",
@@ -53,7 +47,6 @@ export const CONCEPTS: Concept[] = [
   },
   {
     id: "inertia",
-    icon: "🛸",
     title: "관성 (뉴턴 제1법칙)",
     summary: "힘이 없으면 속도는 변하지 않아요. 우주에는 공기 저항이 없어서 계속 미끄러져 가요.",
     formula: "F = 0  →  v 일정",

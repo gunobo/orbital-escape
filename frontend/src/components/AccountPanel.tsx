@@ -48,11 +48,11 @@ export default function AccountPanel({
           </div>
         )}
         {config && !config.google_client_id && !config.dev_auth && (
-          <p className="warn">⚠ 로그인이 설정되지 않아 랭킹 등록 불가</p>
+          <p className="warn">로그인이 설정되지 않아 랭킹에 등록할 수 없어요</p>
         )}
         {!config && (
           <>
-            <p className="warn">⚠ 서버 연결 안 됨 · 랭킹 등록 불가</p>
+            <p className="warn">서버에 연결되지 않아 랭킹에 등록할 수 없어요</p>
             <button className="ghost-btn" onClick={onRetryConfig}>
               다시 연결
             </button>

@@ -1,5 +1,6 @@
 import { ARROW_COLORS } from "./forceArrows";
 import * as C from "../constants/physics";
+import { COLORS } from "../constants/theme";
 import type { PhysicsSnapshot } from "../types";
 
 interface Props {
@@ -22,19 +23,19 @@ function ForceCurve({ mass, mu, r }: { mass: number; mu: number; r: number | nul
   const dot = r !== null ? Math.min(Math.max(r, R_MIN), R_MAX) : null;
   return (
     <svg className="force-curve" viewBox={`0 0 ${W} ${H}`}>
-      <line x1="8" y1={H - 8} x2={W - 8} y2={H - 8} stroke="rgba(255,255,255,0.35)" strokeWidth="1" />
-      <line x1="8" y1="6" x2="8" y2={H - 8} stroke="rgba(255,255,255,0.35)" strokeWidth="1" />
+      <line x1="8" y1={H - 8} x2={W - 8} y2={H - 8} stroke="#44484f" strokeWidth="1" />
+      <line x1="8" y1="6" x2="8" y2={H - 8} stroke="#44484f" strokeWidth="1" />
       <polyline points={points.join(" ")} fill="none" stroke={ARROW_COLORS.gravity} strokeWidth="2" />
       {dot !== null && (
         <>
-          <line x1={px(dot)} y1={py(fOf(dot))} x2={px(dot)} y2={H - 8} stroke="rgba(255,255,255,0.3)" strokeDasharray="3 3" />
+          <line x1={px(dot)} y1={py(fOf(dot))} x2={px(dot)} y2={H - 8} stroke="#44484f" strokeDasharray="3 3" />
           <circle cx={px(dot)} cy={py(fOf(dot))} r="4.5" fill="#fff" />
         </>
       )}
-      <text x={W - 10} y={H - 12} textAnchor="end" fontSize="9" fill="#9aa5c9">
+      <text x={W - 10} y={H - 12} textAnchor="end" fontSize="9" fill="#8b9099">
         거리 r →
       </text>
-      <text x="12" y="14" fontSize="9" fill="#9aa5c9">
+      <text x="12" y="14" fontSize="9" fill="#8b9099">
         힘 F
       </text>
     </svg>
@@ -107,15 +108,15 @@ export default function PhysicsPanel({ p }: Props) {
         <div className="pp-lines">
           <div className="pp-row">
             <span>수평 {f1(p.vForward)}</span>
-            <Bar value={p.vForward} max={26} color="#7cd3ff" />
+            <Bar value={p.vForward} max={26} color={COLORS.velocity} />
           </div>
           <div className="pp-row">
             <span>수직 {f1(p.vUp)}</span>
-            <Bar value={p.vUp} max={12} color="#4ce08a" signed />
+            <Bar value={p.vUp} max={12} color={COLORS.accent} signed />
           </div>
           <div className="pp-row">
             <span>좌우 {f1(p.vRight)}</span>
-            <Bar value={p.vRight} max={12} color="#ffb703" signed />
+            <Bar value={p.vRight} max={12} color={COLORS.reaction} signed />
           </div>
         </div>
       </details>
@@ -132,14 +133,14 @@ export default function PhysicsPanel({ p }: Props) {
         <div className="pp-lines">
           <div className="pp-row">
             <span>운동 {p.ke.toFixed(0)}</span>
-            <Bar value={p.ke} max={400} color="#7cd3ff" />
+            <Bar value={p.ke} max={400} color={COLORS.velocity} />
           </div>
           <div className="pp-row">
             <span>위치 {p.pe.toFixed(0)}</span>
-            <Bar value={p.pe} max={200} color="#b388ff" signed />
+            <Bar value={p.pe} max={200} color={COLORS.gravity} signed />
           </div>
           <div>
-            합 E <b>{mech.toFixed(0)}</b> · 손실 <b style={{ color: "#ff8a8a" }}>{p.brakeLoss.toFixed(0)}</b>
+            합 E <b>{mech.toFixed(0)}</b> · 손실 <b style={{ color: COLORS.danger }}>{p.brakeLoss.toFixed(0)}</b>
           </div>
         </div>
       </details>

@@ -273,19 +273,19 @@ export default function App() {
 
       if (prev && h.misses > prev.misses) {
         const left = Math.max(0, MAX_MISSES - h.misses);
-        showHint({ id: `life-${h.misses}`, title: `💔 목숨 ${left}개 남음`, tone: "warn" }, 2500, false);
+        showHint({ id: `life-${h.misses}`, title: `목숨 ${left}개 남았어요`, tone: "warn" }, 2500, false);
       }
       if (h.physics.field) {
-        showHint({ id: "gravity", title: "🪐 가까울수록 중력이 세져요  F = GMm/r²" }, 5000);
+        showHint({ id: "gravity", title: "가까울수록 중력이 세져요 (F = GMm/r²)" }, 5000);
       }
       if (h.physics.thrustForce > 0) {
-        showHint({ id: "thrust", title: "🚀 엔진 힘 F → 가속도 a = F/m" }, 4500);
+        showHint({ id: "thrust", title: "엔진 힘 F는 가속도 a = F/m 로 나타나요" }, 4500);
       }
       if (h.fuel <= OIL_TRIGGER_THRESHOLD) {
-        showHint({ id: "fuel", title: "⛽ 연료 부족! 주황색 기름을 먹으세요" }, 5000);
+        showHint({ id: "fuel", title: "연료가 부족해요. 주황색 기름을 먹으세요" }, 5000);
       }
       if (prev && h.fuel - prev.fuel > 30) {
-        showHint({ id: "oil", title: "🛢 무거워짐 → 같은 힘이면 가속이 느려져요" }, 5000);
+        showHint({ id: "oil", title: "무거워지면 같은 힘으로도 가속이 느려져요" }, 5000);
       }
     },
     [showHint],
@@ -306,7 +306,7 @@ export default function App() {
     setCountdown(3);
     setRunId((id) => id + 1);
     setPhase("playing");
-    showHint({ id: "start", title: "🖱 마우스로 고리를 가리키세요  ·  Space 일시정지" }, 6000);
+    showHint({ id: "start", title: "마우스로 고리를 가리키세요. Space는 일시정지" }, 6000);
   };
 
   const submitScore = (score: number) => {

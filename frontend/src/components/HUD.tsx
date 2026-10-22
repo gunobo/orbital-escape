@@ -1,4 +1,6 @@
+import { GasPump, Heart } from "@phosphor-icons/react";
 import * as C from "../constants/physics";
+import { COLORS } from "../constants/theme";
 import type { HudSnapshot } from "../types";
 
 interface Props {
@@ -12,10 +14,10 @@ function GateRadar({ gate }: { gate: NonNullable<HudSnapshot["gate"]> }) {
   // 점 = 내 위치(게이트 중심 기준). 고리 안에 들어오면 통과 성공
   const dotX = Math.max(-RADAR_RANGE, Math.min(RADAR_RANGE, -gate.right));
   const dotY = Math.max(-RADAR_RANGE, Math.min(RADAR_RANGE, gate.up));
-  const color = gate.aligned ? "#4ce08a" : "#ffb703";
+  const color = gate.aligned ? COLORS.ok : COLORS.accent;
   return (
     <svg className="gate-radar" viewBox={`${-RADAR_RANGE - 1} ${-RADAR_RANGE - 1} ${RADAR_RANGE * 2 + 2} ${RADAR_RANGE * 2 + 2}`}>
-      <rect x={-RADAR_RANGE} y={-RADAR_RANGE} width={RADAR_RANGE * 2} height={RADAR_RANGE * 2} fill="rgba(10,12,24,0.55)" stroke="rgba(124,92,255,0.4)" strokeWidth="0.3" />
+      <rect x={-RADAR_RANGE} y={-RADAR_RANGE} width={RADAR_RANGE * 2} height={RADAR_RANGE * 2} fill="rgba(13,14,16,0.6)" stroke="#2b2e33" strokeWidth="0.3" />
       <line x1={-RADAR_RANGE} y1="0" x2={RADAR_RANGE} y2="0" stroke="rgba(255,255,255,0.12)" strokeWidth="0.2" />
       <line x1="0" y1={-RADAR_RANGE} x2="0" y2={RADAR_RANGE} stroke="rgba(255,255,255,0.12)" strokeWidth="0.2" />
       <circle cx="0" cy="0" r={gate.gateRadius} fill="none" stroke={color} strokeWidth="0.7" />
@@ -25,7 +27,7 @@ function GateRadar({ gate }: { gate: NonNullable<HudSnapshot["gate"]> }) {
 }
 
 function guideText(gate: NonNullable<HudSnapshot["gate"]>): string {
-  if (gate.aligned) return "✓ 정렬됨";
+  if (gate.aligned) return "정렬됨";
   const parts: string[] = [];
   if (Math.abs(gate.right) >= 0.5) parts.push(`${gate.right > 0 ? "→" : "←"} ${Math.abs(gate.right).toFixed(1)}m`);
   if (Math.abs(gate.up) >= 0.5) parts.push(`${gate.up > 0 ? "↑" : "↓"} ${Math.abs(gate.up).toFixed(1)}m`);
@@ -38,9 +40,7 @@ function Lives({ misses }: { misses: number }) {
   return (
     <div className="lives" key={misses} aria-label={`남은 목숨 ${left}개`}>
       {Array.from({ length: C.MAX_MISSES }, (_, i) => (
-        <span key={i} className={i < left ? "heart" : "heart heart-lost"}>
-          {i < left ? "❤️" : "🖤"}
-        </span>
+        <Heart key={i} size={26} weight={i < left ? "fill" : "regular"} className={i < left ? "heart" : "heart heart-lost"} aria-hidden />
       ))}
     </div>
   );
@@ -77,7 +77,7 @@ export default function HUD({ hud, best }: Props) {
 
       <div className="hud-panel">
         <div className="hud-row">
-          <span>⛽</span>
+          <GasPump size={16} aria-label="연료" />
           <div className="bar">
             <div
               className={"bar-fill" + (fuelLow ? " bar-fill-low" : "")}

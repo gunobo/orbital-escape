@@ -1,11 +1,12 @@
 import * as THREE from "three";
+import { COLORS } from "../constants/theme";
 import type { SimState } from "../systems/simulation";
 
 export const ARROW_COLORS = {
-  gravity: "#b388ff",
-  reaction: "#ff9f43",
-  thrust: "#4dd0e1",
-  velocity: "#ffffff",
+  gravity: COLORS.gravity,
+  reaction: COLORS.reaction,
+  thrust: COLORS.thrust,
+  velocity: COLORS.velocity,
 } as const;
 
 export interface ForceArrows {
@@ -66,9 +67,9 @@ function place(
 
 /**
  * 화살표 = 힘. 길이는 힘의 크기에 비례한다.
- *  - 보라: 행성이 나를 당기는 중력 F (질량 m에 비례)
- *  - 주황: 내가 행성을 당기는 힘 — 작용·반작용이라 보라와 길이가 같고 방향이 반대
- *  - 하늘: 엔진이 내는 힘 (질량과 무관)
+ *  - 앰버: 행성이 나를 당기는 중력 F (질량 m에 비례)
+ *  - 파랑: 내가 행성을 당기는 힘 (작용·반작용이라 앰버와 길이가 같고 방향이 반대)
+ *  - 초록: 엔진이 내는 힘 (질량과 무관)
  *  - 흰색: 속도
  */
 export function updateForceArrows(arrows: ForceArrows, sim: SimState, show: boolean): void {
