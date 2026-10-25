@@ -18,7 +18,7 @@ export default function OilItemView({ data }: Props) {
 
   return (
     <mesh ref={ref} position={[data.position.x, data.position.y, data.position.z]}>
-      <torusKnotGeometry args={[data.radius * 0.6, data.radius * 0.25, 64, 12]} />
+      <torusKnotGeometry args={[data.radius * 0.8, data.radius * 0.3, 64, 12]} />
       <meshStandardMaterial color="#ffb703" emissive="#ff8c00" emissiveIntensity={0.8} />
     </mesh>
   );

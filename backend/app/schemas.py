@@ -1,6 +1,6 @@
 import re
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 NICKNAME_PATTERN = re.compile(r"^[0-9A-Za-z가-힣_\-]{2,12}$")
 
@@ -27,6 +27,12 @@ class NicknameIn(BaseModel):
 
 class ScoreIn(BaseModel):
     score: int
+    # DB 정수 범위를 넘는 값이 들어오면 서버 오류가 나므로 범위를 제한한다
+    run_id: int = Field(ge=1, le=2**31 - 1)
+
+
+class RunOut(BaseModel):
+    run_id: int
 
 
 class UserOut(BaseModel):

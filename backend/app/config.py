@@ -15,6 +15,9 @@ class Settings:
     database_url: str
     dev_auth_enabled: bool
     max_score: int
+    # 점수 검증: 한 판의 평균 속도는 이 값을 넘을 수 없다 (게임의 순항 속도 최대는 22 m/s)
+    max_avg_speed: float
+    run_slack_m: float
 
 
 def load_settings() -> Settings:
@@ -26,6 +29,8 @@ def load_settings() -> Settings:
         database_url=os.getenv("DATABASE_URL", "sqlite:///./app.db"),
         dev_auth_enabled=_flag("DEV_AUTH_ENABLED", False),
         max_score=int(os.getenv("MAX_SCORE", "1000000")),
+        max_avg_speed=float(os.getenv("MAX_AVG_SPEED", "30")),
+        run_slack_m=float(os.getenv("RUN_SLACK_M", "60")),
     )
 
 

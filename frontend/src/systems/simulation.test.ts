@@ -223,10 +223,58 @@ describe("화면 효과용 사건", () => {
     expect(sim.events.some((e) => e.kind === "oil")).toBe(true);
 
     const hit = calmSim();
-    hit.world.obstacles.push({ id: 8, position: { ...hit.pos, z: hit.pos.z + 0.5 }, velocity: { x: 0, y: 0, z: 0 }, radius: 1, age: 1 });
+    hit.world.obstacles.push(rock(hit, 0.5));
     stepSim(hit, NO_INPUT, DT);
-    expect(hit.gameOver).toBe("collision");
-    expect(hit.events.some((e) => e.kind === "crash")).toBe(true);
+    expect(hit.events.some((e) => e.kind === "hit")).toBe(true);
+  });
+});
+
+function rock(sim: SimState, dz: number) {
+  return { id: sim.world.idSeq++, position: { ...sim.pos, z: sim.pos.z + dz }, velocity: { x: 0, y: 0, z: 0 }, radius: 1, age: 1 };
+}
+
+describe("목숨: 운석에 맞아도 바로 끝나지 않고 목숨이 1개 깎인다", () => {
+  it("맞으면 목숨 -1, 맞은 운석은 사라지고, 잠시 무적이다", () => {
+    const sim = calmSim();
+    sim.world.obstacles.push(rock(sim, 0.5));
+    stepSim(sim, NO_INPUT, DT);
+    expect(sim.misses).toBe(1);
+    expect(sim.gameOver).toBeNull();
+    expect(sim.stats.hits).toBe(1);
+    expect(sim.world.obstacles.some((o) => o.position.z < sim.pos.z + 1 && o.age === 1)).toBe(false);
+    expect(sim.invulnerable).toBeGreaterThan(0);
+  });
+
+  it("무적인 동안 운석이 겹쳐도 목숨이 더 깎이지 않는다", () => {
+    const sim = calmSim();
+    sim.world.obstacles.push(rock(sim, 0.5));
+    stepSim(sim, NO_INPUT, DT);
+    sim.world.obstacles.push(rock(sim, 0.1));
+    stepSim(sim, NO_INPUT, DT);
+    expect(sim.misses).toBe(1);
+    // 무적이 끝나면 다시 맞을 수 있다
+    sim.invulnerable = 0;
+    sim.world.obstacles.push(rock(sim, 0.1));
+    stepSim(sim, NO_INPUT, DT);
+    expect(sim.misses).toBe(2);
+  });
+
+  it("게이트를 놓친 것과 운석에 맞은 것이 같은 목숨 3개를 함께 깎는다", () => {
+    const sim = calmSim();
+    const g = sim.world.fields[0];
+    sim.pos = { x: g.position.x + 9, y: g.position.y, z: g.position.z - 0.01 };
+    stepSim(sim, NO_INPUT, DT); // 게이트 놓침: 목숨 2개 남음
+    expect(sim.misses).toBe(1);
+    sim.world.obstacles.push(rock(sim, 0.5));
+    stepSim(sim, NO_INPUT, DT); // 운석: 목숨 1개 남음
+    expect(sim.misses).toBe(2);
+    expect(sim.gameOver).toBeNull();
+    sim.invulnerable = 0;
+    sim.world.obstacles.push(rock(sim, 0.5));
+    stepSim(sim, NO_INPUT, DT); // 마지막 목숨
+    expect(sim.misses).toBe(3);
+    expect(sim.gameOver).toBe("collision");
+    expect(sim.events.some((e) => e.kind === "crash")).toBe(true);
   });
 });
 

@@ -6,6 +6,7 @@ import { VIEWS, type ViewId } from "../constants/camera";
 import { BASE_THRUST_FORCE, BOOST_MULTIPLIER, PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_WIDTH } from "../constants/physics";
 import { COLORS } from "../constants/theme";
 import { useControls } from "../hooks/useControls";
+import { aimPointOnPlane } from "../systems/aim";
 import { clamp } from "../systems/physics";
 import { createSim, nextGateGuide, physicsSnapshot, score, stepSim, type SimEvent, type SimInput, type SimState } from "../systems/simulation";
 import { entityCount } from "../systems/spawner";
@@ -69,6 +70,7 @@ function summarize(sim: SimState): RunSummary {
     oilPickups: sim.stats.oilPickups,
     gatesPassed: sim.stats.gatesPassed,
     gatesMissed: sim.stats.gatesMissed,
+    hits: sim.stats.hits,
     timeInField: sim.stats.timeInField,
     engineWork: sim.energy.engine,
     brakeLoss: sim.energy.brake,
@@ -83,6 +85,9 @@ function effectFor(e: SimEvent): Effect {
   }
   if (e.kind === "oil") {
     return { position, color: COLORS.accent, age: 0, life: 0.5, fromScale: 1, toScale: 4.5 };
+  }
+  if (e.kind === "hit") {
+    return { position, color: COLORS.danger, age: 0, life: 0.5, fromScale: 1, toScale: 6 };
   }
   return { position, color: COLORS.danger, age: 0, life: 0.8, fromScale: 1, toScale: 10 };
 }
@@ -128,14 +133,15 @@ export default function Scene({
     live.current = { view, frozen, controlMode, inertialControl, showArrows };
   });
 
-  const raycaster = useMemo(() => new THREE.Raycaster(), []);
-  const aimPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), []);
   const aimPoint = useMemo(() => new THREE.Vector3(), []);
   const lastTarget = useRef<{ x: number; y: number } | null>(null);
   const lastView = useRef<ViewId | null>(null);
   const camBase = useRef({ x: 0, y: 0 });
   const flameLen = useRef(0);
   const endTime = useRef<number | null>(null);
+  const hitShake = useRef(0);
+  const shipMat = useRef<THREE.MeshStandardMaterial>(null);
+  const wingMat = useRef<THREE.MeshStandardMaterial>(null);
 
   const reportedRef = useRef(false);
   const hudAccumRef = useRef(0);
@@ -162,9 +168,7 @@ export default function Scene({
         // 마우스 포인터가 가리키는 선(ray)과, 다음 게이트가 있는 깊이의 평면이 만나는 점이 목표
         const gate = world.fields.find((f) => !f.resolved && f.position.z > pos.z);
         aimZ = gate && gate.position.z - pos.z < 140 ? gate.position.z : pos.z + 45;
-        aimPlane.constant = -aimZ;
-        raycaster.setFromCamera(state.pointer, camera);
-        if (raycaster.ray.intersectPlane(aimPlane, aimPoint)) {
+        if (aimPointOnPlane(camera, state.pointer, aimZ, aimPoint)) {
           lastTarget.current = {
             x: clamp(aimPoint.x, -PLAYFIELD_HALF_WIDTH, PLAYFIELD_HALF_WIDTH),
             y: clamp(aimPoint.y, -PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_HEIGHT),
@@ -177,6 +181,7 @@ export default function Scene({
 
     // ── 2) 사건 → 효과 (게이트 통과/놓침, 기름, 충돌) ──────────
     for (const e of sim.events.splice(0)) {
+      if (e.kind === "hit") hitShake.current = 0.3;
       if (effects.current.length >= MAX_EFFECTS) effects.current.shift();
       effects.current.push(effectFor(e));
     }
@@ -217,6 +222,14 @@ export default function Scene({
       mesh.rotation.z = clamp(-vel.x * 0.03, -0.3, 0.3);
       mesh.rotation.x = clamp(-vel.y * 0.02, -0.2, 0.2);
     }
+    // 맞은 직후 무적인 동안은 우주선이 흐려진다 (깜빡이지 않고 흐려지기만 해서 눈이 편하다)
+    const ghost = sim.invulnerable > 0 && !ending ? 0.35 : 1;
+    for (const m of [shipMat.current, wingMat.current]) {
+      if (m) {
+        m.opacity = ghost;
+        m.transparent = ghost < 1;
+      }
+    }
     const flame = flameRef.current;
     if (flame) {
       // 엔진 힘이 클수록 불꽃이 길어진다 (힘이 보이는 피드백)
@@ -256,8 +269,14 @@ export default function Scene({
     // 충돌하면 화면이 잠깐 흔들렸다가 가라앉는다
     let shakeX = 0;
     let shakeY = 0;
-    if (endTime.current !== null && !reduceMotion) {
-      const amp = 0.5 * Math.max(0, 1 - endTime.current / END_DELAY) * (sim.gameOver === "collision" ? 1 : 0.3);
+    if (!reduceMotion) {
+      let amp = 0;
+      if (endTime.current !== null) {
+        amp = 0.5 * Math.max(0, 1 - endTime.current / END_DELAY) * (sim.gameOver === "collision" ? 1 : 0.3);
+      } else if (hitShake.current > 0) {
+        amp = 0.35 * (hitShake.current / 0.3);
+        hitShake.current = Math.max(0, hitShake.current - dt);
+      }
       shakeX = (Math.random() - 0.5) * amp;
       shakeY = (Math.random() - 0.5) * amp;
     }
@@ -307,10 +326,10 @@ export default function Scene({
 
       <Trail width={1} length={24} color={COLORS.velocity} attenuation={(t) => t * t}>
         <mesh ref={playerMeshRef} geometry={shipGeometry}>
-          <meshStandardMaterial color="#d9dbde" emissive="#6b6f76" emissiveIntensity={0.35} />
+          <meshStandardMaterial ref={shipMat} color="#d9dbde" emissive="#6b6f76" emissiveIntensity={0.35} />
           <mesh position={[0, 0, -0.35]}>
             <boxGeometry args={[2.2, 0.06, 0.6]} />
-            <meshStandardMaterial color="#a9adb4" emissive="#6b6f76" emissiveIntensity={0.25} />
+            <meshStandardMaterial ref={wingMat} color="#a9adb4" emissive="#6b6f76" emissiveIntensity={0.25} />
           </mesh>
           <mesh ref={flameRef} geometry={flameGeometry} position={[0, 0, -0.9]} visible={false}>
             <meshBasicMaterial color={COLORS.accent} />

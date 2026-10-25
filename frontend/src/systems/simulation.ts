@@ -35,6 +35,8 @@ export interface SimStats {
   oilPickups: number;
   gatesPassed: number;
   gatesMissed: number;
+  /** 운석에 맞은 횟수 */
+  hits: number;
   /** 중력장 안에서 보낸 시간(초) */
   timeInField: number;
 }
@@ -44,7 +46,10 @@ export interface SimState {
   vel: Vec3;
   fuel: number;
   mass: number;
+  /** 잃은 목숨 수 (게이트를 놓치거나 운석에 맞을 때마다 +1, MAX_MISSES가 되면 끝) */
   misses: number;
+  /** 운석에 맞은 뒤 남은 무적 시간(초) */
+  invulnerable: number;
   /** 연속 게이트 통과 횟수 */
   streak: number;
   elapsed: number;
@@ -66,6 +71,9 @@ export interface SimState {
 export type SimEvent =
   | { kind: "gate"; passed: boolean; position: Vec3; radius: number }
   | { kind: "oil"; position: Vec3 }
+  /** 운석에 맞았지만 목숨이 남아 있는 경우 */
+  | { kind: "hit"; position: Vec3 }
+  /** 마지막 목숨까지 잃은 경우 */
   | { kind: "crash"; position: Vec3 };
 
 export const NO_INPUT: SimInput = { up: false, down: false, left: false, right: false, boost: false };
@@ -83,6 +91,7 @@ export function createSim(settings: ObstacleSettings, rng: Rng = Math.random): S
     fuel: C.FUEL_MAX,
     mass,
     misses: 0,
+    invulnerable: 0,
     streak: 0,
     elapsed: 0,
     world: createWorldState(rng),
@@ -101,6 +110,7 @@ export function createSim(settings: ObstacleSettings, rng: Rng = Math.random): S
       oilPickups: 0,
       gatesPassed: 0,
       gatesMissed: 0,
+      hits: 0,
       timeInField: 0,
     },
   };
@@ -117,6 +127,7 @@ export function score(sim: SimState): number {
 export function stepSim(sim: SimState, input: SimInput, dt: number): void {
   if (sim.gameOver) return;
   sim.elapsed += dt;
+  sim.invulnerable = Math.max(0, sim.invulnerable - dt);
   const { world, pos, vel } = sim;
 
   // 1) 중력: 영향 반경 안의 모든 중력장이 당긴다. 게이트를 지나도 중력은 사라지지 않는다.
@@ -252,11 +263,21 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
 
   stepObstacles(world, dt);
 
-  for (const obstacle of world.obstacles) {
-    if (distance3(pos, obstacle.position) <= C.PLAYER_RADIUS + obstacle.radius) {
-      sim.gameOver = "collision";
-      sim.events.push({ kind: "crash", position: { ...pos } });
-      break;
+  if (sim.invulnerable <= 0 && !sim.gameOver) {
+    const hit = world.obstacles.find((o) => distance3(pos, o.position) <= C.PLAYER_RADIUS + o.radius);
+    if (hit) {
+      // 맞은 운석은 부서져 사라지고, 목숨이 하나 줄며, 잠시 무적이 된다
+      world.obstacles = world.obstacles.filter((o) => o !== hit);
+      sim.misses += 1;
+      sim.stats.hits += 1;
+      sim.streak = 0;
+      sim.invulnerable = C.HIT_INVULNERABLE_SEC;
+      if (sim.misses >= C.MAX_MISSES) {
+        sim.gameOver = "collision";
+        sim.events.push({ kind: "crash", position: { ...pos } });
+      } else {
+        sim.events.push({ kind: "hit", position: { ...hit.position } });
+      }
     }
   }
 

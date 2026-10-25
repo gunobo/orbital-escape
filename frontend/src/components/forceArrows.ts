@@ -1,13 +1,6 @@
 import * as THREE from "three";
-import { COLORS } from "../constants/theme";
+import { ARROW_COLORS } from "../constants/theme";
 import type { SimState } from "../systems/simulation";
-
-export const ARROW_COLORS = {
-  gravity: COLORS.gravity,
-  reaction: COLORS.reaction,
-  thrust: COLORS.thrust,
-  velocity: COLORS.velocity,
-} as const;
 
 export interface ForceArrows {
   gravity: THREE.ArrowHelper;

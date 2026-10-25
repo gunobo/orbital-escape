@@ -15,6 +15,7 @@ const RUN: RunSummary = {
   oilPickups: 1,
   gatesPassed: 3,
   gatesMissed: 1,
+  hits: 0,
   timeInField: 4,
   engineWork: 120,
   brakeLoss: 55,

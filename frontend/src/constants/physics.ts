@@ -43,17 +43,21 @@ export const GRAVITY_FIELD_GATE_RADIUS = 5.0;
 /** 특이점(분모가 0에 가까워지는 것) 방지용 최소 반경 */
 export const GRAVITY_MIN_R = 5;
 
+/** 목숨 3개: 게이트를 놓치거나 운석에 맞을 때마다 1개씩 잃고, 0개가 되면 끝난다 */
 export const MAX_MISSES = 3;
+/** 운석에 맞은 뒤 이 시간(초) 동안은 무적이라 겹쳐 있어도 목숨이 연달아 깎이지 않는다 */
+export const HIT_INVULNERABLE_SEC = 1.5;
 /** 게이트를 연속으로 이만큼 통과하면 미스가 1회 회복된다. 기획서 규칙(3회 누적)대로 기본은 0(회복 없음) */
 export const MISS_RECOVER_STREAK = 0;
 
 export const FUEL_MAX = 100;
-export const FUEL_DRAIN_IDLE = 1.5;
+export const FUEL_DRAIN_IDLE = 1;
 export const FUEL_DRAIN_THRUST = 3;
 export const FUEL_DRAIN_BOOST_EXTRA = 5;
 export const FUEL_REFILL_OIL = 85;
 export const OIL_TRIGGER_THRESHOLD = 25;
-export const OIL_SPAWN_COOLDOWN = 12;
+/** 기름을 놓쳐도 곧바로 다시 나온다 (이게 길면 한 번 놓친 기름이 사실상 탈락이 된다: 봇 실험으로 확인) */
+export const OIL_SPAWN_COOLDOWN = 4;
 export const OIL_ITEM_RADIUS = 2.0;
 export const OIL_SPAWN_AHEAD_Z = 30;
 

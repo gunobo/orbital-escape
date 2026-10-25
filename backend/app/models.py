@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -21,3 +21,14 @@ class User(Base):
     best_score: Mapped[int] = mapped_column(Integer, default=0, index=True)
     best_score_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Run(Base):
+    """한 판의 시작을 서버가 기억해 둔다. 점수는 "시작 후 흐른 시간"으로 가능한 값인지 검증한다."""
+
+    __tablename__ = "runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    used: Mapped[bool] = mapped_column(Boolean, default=False)

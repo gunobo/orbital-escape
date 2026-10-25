@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -60,7 +60,10 @@ def set_nickname(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> schemas.UserOut:
-    taken = db.scalar(select(User.id).where(User.nickname == body.nickname, User.id != user.id))
+    # admin / Admin 처럼 대소문자만 다른 닉네임도 같은 것으로 본다 (사칭 방지)
+    taken = db.scalar(
+        select(User.id).where(func.lower(User.nickname) == body.nickname.lower(), User.id != user.id)
+    )
     if taken is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "이미 사용 중인 닉네임입니다.")
     user.nickname = body.nickname

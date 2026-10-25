@@ -1,6 +1,5 @@
-import { ARROW_COLORS } from "./forceArrows";
 import * as C from "../constants/physics";
-import { COLORS } from "../constants/theme";
+import { ARROW_COLORS, COLORS } from "../constants/theme";
 import type { PhysicsSnapshot } from "../types";
 
 interface Props {

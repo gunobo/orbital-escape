@@ -109,6 +109,7 @@ export interface RunSummary {
   oilPickups: number;
   gatesPassed: number;
   gatesMissed: number;
+  hits: number;
   timeInField: number;
   /** 엔진이 해 준 일 / 제동으로 손실된 에너지 (누적) */
   engineWork: number;

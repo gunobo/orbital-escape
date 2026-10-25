@@ -88,8 +88,10 @@ export const api = {
   me: (token: string) => request<ApiUser>("/me", {}, token),
   setNickname: (token: string, nickname: string) =>
     request<ApiUser>("/me/nickname", { method: "PUT", body: JSON.stringify({ nickname }) }, token),
-  submitScore: (token: string, score: number) =>
-    request<ScoreResult>("/scores", { method: "POST", body: JSON.stringify({ score }) }, token),
+  /** 게임을 시작할 때 부른다. 서버가 시작 시각을 기억해 두었다가 점수가 가능한 값인지 확인한다 */
+  startRun: (token: string) => request<{ run_id: number }>("/runs", { method: "POST" }, token),
+  submitScore: (token: string, score: number, runId: number) =>
+    request<ScoreResult>("/scores", { method: "POST", body: JSON.stringify({ score, run_id: runId }) }, token),
   leaderboard: (token?: string | null, limit = 10) =>
     request<Leaderboard>(`/leaderboard?limit=${limit}`, {}, token),
 };

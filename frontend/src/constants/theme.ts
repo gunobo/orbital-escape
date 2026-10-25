@@ -19,3 +19,11 @@ export const COLORS = {
   thrust: "#78b37f",
   velocity: "#d9dbde",
 } as const;
+
+/** 힘 화살표 색 (3D 코드를 불러오지 않고도 패널에서 쓸 수 있게 여기에 둔다) */
+export const ARROW_COLORS = {
+  gravity: COLORS.gravity,
+  reaction: COLORS.reaction,
+  thrust: COLORS.thrust,
+  velocity: COLORS.velocity,
+} as const;

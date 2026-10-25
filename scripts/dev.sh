@@ -2,6 +2,7 @@
 # 백엔드(8000)와 프론트(5173)를 한 번에 켠다. 종료는 Ctrl+C (두 서버가 같이 꺼진다).
 #   ./scripts/dev.sh
 # 로컬 테스트용 임시 로그인(DEV_AUTH_ENABLED)이 켜진 상태로 실행된다.
+# 백엔드는 --reload 로 켜서 코드를 고치면 자동으로 다시 시작된다 (옛 코드가 계속 떠 있는 일을 막는다).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -24,7 +25,7 @@ if [ ! -d frontend/node_modules ]; then
 fi
 
 echo "▶ 백엔드 시작: http://localhost:8000  (개발용 로그인 켜짐)"
-(cd backend && DEV_AUTH_ENABLED=true .venv/bin/uvicorn app.main:app --port 8000) &
+(cd backend && DEV_AUTH_ENABLED=true .venv/bin/uvicorn app.main:app --port 8000 --reload) &
 BACKEND_PID=$!
 trap 'kill "$BACKEND_PID" 2>/dev/null || true' EXIT INT TERM
 

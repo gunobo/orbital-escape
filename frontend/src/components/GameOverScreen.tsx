@@ -13,6 +13,7 @@ export type SubmitState =
   | "done"
   | "error"
   | "expired"
+  | "rejected"
   | "no-login"
   | "no-nickname";
 
@@ -31,8 +32,8 @@ interface Props {
 }
 
 const REASON_TEXT: Record<GameOverReason, string> = {
-  collision: "운석과 충돌!",
-  "gate-miss": "목숨을 모두 잃었어요",
+  collision: "운석에 맞아 목숨을 모두 잃었어요",
+  "gate-miss": "게이트를 놓쳐 목숨을 모두 잃었어요",
 };
 
 const SUBMIT_TEXT: Record<SubmitState, string> = {
@@ -41,6 +42,7 @@ const SUBMIT_TEXT: Record<SubmitState, string> = {
   done: "",
   error: "서버에 연결되지 않아 랭킹에 등록하지 못했어요",
   expired: "로그인이 만료됐어요. 다시 로그인하세요",
+  rejected: "플레이 시간에 비해 점수가 너무 높아 등록되지 않았어요",
   "no-login": "로그인하면 랭킹에 등록돼요",
   "no-nickname": "닉네임을 정하면 랭킹에 등록돼요",
 };

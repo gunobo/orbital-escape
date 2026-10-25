@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import { api, ApiError, loadToken, saveToken } from "./api";
 import type { ApiUser, AppConfig, Leaderboard as LeaderboardData, ScoreResult } from "./api";
 import AccountPanel from "./components/AccountPanel";
 import ControlBar from "./components/ControlBar";
-import GameCanvas from "./components/GameCanvas";
 import GameOverScreen, { type SubmitState } from "./components/GameOverScreen";
 import HintToast, { type Hint } from "./components/HintToast";
 import HUD from "./components/HUD";
@@ -20,6 +19,10 @@ import type { ConceptId } from "./learning/concepts";
 import { loadProgress, recordAnswer, type Progress } from "./learning/progress";
 import { pickQuiz, type Question } from "./learning/quiz";
 import type { GameOverReason, GamePhase, HudSnapshot, ObstacleSettings, RunSummary } from "./types";
+
+// 3D 엔진(three.js)은 크기가 커서 따로 불러온다. 시작 화면이 뜬 직후 미리 받아 두므로 출발할 때 기다리지 않는다.
+const loadGameCanvas = () => import("./components/GameCanvas");
+const GameCanvas = lazy(loadGameCanvas);
 
 const INITIAL_HUD: HudSnapshot = {
   scoreMeters: 0,
@@ -109,6 +112,8 @@ export default function App() {
   const shownHints = useRef(new Set<string>());
   const hintTimer = useRef<number | undefined>(undefined);
   const prevHud = useRef<HudSnapshot | null>(null);
+  /** 이번 판의 서버 기록(run). 로그인 상태가 아니거나 서버가 꺼져 있으면 null */
+  const runPromise = useRef<Promise<number | null>>(Promise.resolve(null));
 
   const best = Math.max(localBest, user?.best_score ?? 0);
   const frozen = paused || countdown !== null;
@@ -118,6 +123,8 @@ export default function App() {
 
   useEffect(() => {
     loadConfig();
+    const t = window.setTimeout(() => void loadGameCanvas(), 300);
+    return () => window.clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -302,6 +309,10 @@ export default function App() {
     setHud(INITIAL_HUD);
     prevHud.current = null;
     setInertialControl(true);
+    runPromise.current =
+      token && user?.nickname
+        ? api.startRun(token).then((r) => r.run_id).catch(() => null)
+        : Promise.resolve(null);
     setPausedBoth(false);
     setCountdown(3);
     setRunId((id) => id + 1);
@@ -315,8 +326,11 @@ export default function App() {
     if (!user.nickname) return setSubmitState("no-nickname");
 
     setSubmitState("submitting");
-    api
-      .submitScore(token, score)
+    runPromise.current
+      .then((runId) => {
+        if (runId === null) throw new ApiError(0, "판 기록이 없습니다.");
+        return api.submitScore(token, score, runId);
+      })
       .then((res) => {
         setServerResult(res);
         setUser((u) => (u ? { ...u, best_score: res.best_score } : u));
@@ -326,6 +340,10 @@ export default function App() {
         if (e instanceof ApiError && e.status === 401) {
           handleLogout();
           setSubmitState("expired");
+        } else if (e instanceof ApiError && e.status === 409) {
+          setSubmitState("done"); // 이미 기록된 판 (응답만 놓친 경우)
+        } else if (e instanceof ApiError && e.status === 422) {
+          setSubmitState("rejected");
         } else {
           setSubmitState("error");
         }
@@ -382,17 +400,19 @@ export default function App() {
 
       {phase === "playing" && (
         <>
-          <GameCanvas
-            key={runId}
-            obstacleSettings={obstacleSettings}
-            view={view}
-            frozen={frozen}
-            controlMode={controlMode}
-            inertialControl={inertialControl}
-            showArrows={physicsView !== "off"}
-            onHud={handleHud}
-            onGameOver={handleGameOver}
-          />
+          <Suspense fallback={null}>
+            <GameCanvas
+              key={runId}
+              obstacleSettings={obstacleSettings}
+              view={view}
+              frozen={frozen}
+              controlMode={controlMode}
+              inertialControl={inertialControl}
+              showArrows={physicsView !== "off"}
+              onHud={handleHud}
+              onGameOver={handleGameOver}
+            />
+          </Suspense>
           <HUD hud={hud} best={best} />
           <ControlBar
             view={view}

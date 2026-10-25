@@ -14,6 +14,8 @@ export interface BotProfile {
   lookahead: number;
   /** 아이템/게이트를 보고 움직이는지 (false면 가만히 있음) */
   active: boolean;
+  /** 마우스 조종: 키 대신 "가고 싶은 위치"를 지정한다 (jitter: 조준이 흔들리는 정도, m) */
+  pointer?: { jitter: number };
 }
 
 export const PROFILES: BotProfile[] = [
@@ -21,6 +23,10 @@ export const PROFILES: BotProfile[] = [
   { name: "novice", reaction: 0.4, noise: 0.2, boost: false, lookahead: 30, active: true },
   { name: "average", reaction: 0.25, noise: 0.08, boost: true, lookahead: 40, active: true },
   { name: "skilled", reaction: 0.12, noise: 0.02, boost: true, lookahead: 55, active: true },
+  // 마우스 조종 (사람이 마우스로 하는 것에 가깝게: 반응 지연 + 조준 흔들림)
+  { name: "mouse-novice", reaction: 0.4, noise: 0, boost: false, lookahead: 30, active: true, pointer: { jitter: 2.5 } },
+  { name: "mouse-average", reaction: 0.25, noise: 0, boost: false, lookahead: 40, active: true, pointer: { jitter: 1.2 } },
+  { name: "mouse-skilled", reaction: 0.12, noise: 0, boost: false, lookahead: 55, active: true, pointer: { jitter: 0.4 } },
 ];
 
 /**
@@ -70,6 +76,15 @@ export function createBot(profile: BotProfile, rng: Rng) {
       tx = pos.x + (threat.dx / len) * 6;
       ty = pos.y + (threat.dy / len) * 6;
       urgent = threat.eta < 1.0;
+    }
+
+    if (profile.pointer) {
+      const j = profile.pointer.jitter;
+      return {
+        ...NO_INPUT,
+        boost: profile.boost && urgent,
+        target: { x: tx + (rng() - 0.5) * 2 * j, y: ty + (rng() - 0.5) * 2 * j },
+      };
     }
 
     // PD 제어: 목표 위치로 가되 속도를 죽인다

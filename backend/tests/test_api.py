@@ -1,6 +1,6 @@
 from app.routers import auth as auth_router
 
-from .conftest import login
+from .conftest import login, play_run, submit
 
 
 def test_config_exposes_client_id(client):
@@ -39,28 +39,30 @@ def test_nickname_validation_and_uniqueness(client):
     assert client.put("/api/me/nickname", json={"nickname": "우주인"}, headers=a).status_code == 200
 
 
-def test_score_requires_nickname(client):
+def test_run_and_score_require_nickname(client):
     h = login(client, "nonick")
-    assert client.post("/api/scores", json={"score": 10}, headers=h).status_code == 400
+    assert client.post("/api/runs", headers=h).status_code == 400
+    assert client.post("/api/scores", json={"score": 10, "run_id": 1}, headers=h).status_code == 400
 
 
 def test_score_keeps_best_only_and_rejects_invalid(client):
     h = login(client, "p1", "pilot1")
-    assert client.post("/api/scores", json={"score": 120}, headers=h).json()["is_new_best"] is True
-    low = client.post("/api/scores", json={"score": 50}, headers=h).json()
+    assert submit(client, h, 120).json()["is_new_best"] is True
+    low = submit(client, h, 50).json()
     assert low == {"best_score": 120, "is_new_best": False, "rank": 1}
-    assert client.post("/api/scores", json={"score": -1}, headers=h).status_code == 422
-    assert client.post("/api/scores", json={"score": 10**9}, headers=h).status_code == 422
-    assert client.post("/api/scores", json={"score": 1}).status_code == 401
+    run = play_run(client, h, 1000)
+    assert client.post("/api/scores", json={"score": -1, "run_id": run}, headers=h).status_code == 422
+    assert client.post("/api/scores", json={"score": 10**9, "run_id": run}, headers=h).status_code == 422
+    assert client.post("/api/scores", json={"score": 1, "run_id": run}).status_code == 401
 
 
 def test_leaderboard_order_ties_and_my_rank(client):
     a = login(client, "a", "alpha")
     b = login(client, "b", "bravo")
     c = login(client, "c", "charlie")
-    client.post("/api/scores", json={"score": 300}, headers=a)
-    client.post("/api/scores", json={"score": 500}, headers=b)
-    client.post("/api/scores", json={"score": 300}, headers=c)
+    submit(client, a, 300)
+    submit(client, b, 500)
+    submit(client, c, 300)
 
     board = client.get("/api/leaderboard", headers=c).json()
     assert [(e["rank"], e["nickname"]) for e in board["entries"]] == [
