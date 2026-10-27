@@ -27,3 +27,6 @@ cloudflared/config.yml
 
 # Runtime data (SQLite)
 data/
+
+# science26 업로드용 zip
+*.zip

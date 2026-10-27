@@ -1,41 +1,20 @@
+# science26 배포용 (https://science26.bssm.dev/students/1411/)
+# - web: 빌드한 프론트를 nginx(8080)로 서빙하고, /api/ 요청은 backend 로 넘긴다
+# - backend: FastAPI. DATABASE_URL 은 플랫폼이 자동으로 넣어 준다 (PostgreSQL)
+# - GOOGLE_CLIENT_ID, JWT_SECRET 은 대시보드 환경변수로 넣는다
+# 로컬 실행은 docker-compose.override.yml 참고
 services:
-  backend:
-    build: ./backend
-    container_name: orbital-escape-api
-    restart: unless-stopped
-    env_file:
-      - path: .env
-        required: false
-    environment:
-      DATABASE_URL: sqlite:////data/app.db
-    volumes:
-      - ./data:/data
-    networks:
-      - orbital-escape
-
   web:
     build: ./frontend
-    container_name: orbital-escape-web
-    restart: unless-stopped
+    expose: ["8080"]
     depends_on:
       - backend
-    networks:
-      - orbital-escape
+    labels:
+      science26.public: "true"
+      science26.port: "8080"
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: orbital-escape-tunnel
-    restart: unless-stopped
-    command: tunnel run
-    volumes:
-      - ./cloudflared:/etc/cloudflared:ro
+  backend:
+    build: ./backend
+    expose: ["8000"]
     environment:
-      - TUNNEL_CONFIG=/etc/cloudflared/config.yml
-    depends_on:
-      - web
-    networks:
-      - orbital-escape
-
-networks:
-  orbital-escape:
-    driver: bridge
+      DEV_AUTH_ENABLED: "false"

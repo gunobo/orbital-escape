@@ -1,0 +1,19 @@
+# 로컬 확인 전용 (science26 플랫폼은 이 파일을 쓰지 않음)
+# docker compose up --build → http://localhost:8080
+services:
+  web:
+    ports: ["8080:8080"]
+  backend:
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://app:app@postgres:5432/app
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app

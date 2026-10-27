@@ -26,23 +26,16 @@ export interface ScoreResult {
   rank: number;
 }
 
-const TOKEN_KEY = "orbital-escape-token";
+// science26 은 모든 학생 페이지가 같은 도메인을 써서 localStorage 가 공유된다.
+// 로그인 토큰은 저장소에 남기지 않고 메모리에만 둔다 (새로고침하면 다시 로그인)
+let memoryToken: string | null = null;
 
 export function loadToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
+  return memoryToken;
 }
 
 export function saveToken(token: string | null): void {
-  try {
-    if (token) localStorage.setItem(TOKEN_KEY, token);
-    else localStorage.removeItem(TOKEN_KEY);
-  } catch {
-    /* 저장소 사용 불가 환경에서는 세션 동안만 유지 */
-  }
+  memoryToken = token;
 }
 
 export class ApiError extends Error {
@@ -56,7 +49,7 @@ export class ApiError extends Error {
 async function request<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(`/api${path}`, { ...init, headers });
+  const res = await fetch(`api${path}`, { ...init, headers });
   if (!res.ok) {
     let message = "요청에 실패했습니다.";
     try {
