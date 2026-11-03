@@ -1,5 +1,6 @@
 import { Pause } from "@phosphor-icons/react";
 import { CONCEPTS } from "../learning/concepts";
+import { IS_TOUCH } from "../hooks/touch";
 import { ConceptIcon } from "./Icons";
 
 interface Props {
@@ -15,6 +16,13 @@ export default function PauseOverlay({ onResume, onQuit }: Props) {
           <Pause size={26} weight="fill" aria-hidden /> 일시정지
         </h1>
 
+        {IS_TOUCH ? (
+          <ul className="keys">
+            <li><kbd>끌기</kbd> 손가락으로 고리를 가리키기</li>
+            <li><kbd>가속</kbd> 오른쪽 아래 버튼을 누르고 있기</li>
+            <li><kbd>아래 막대</kbd> 시점 · 조종 · 제동 · 물리 보기</li>
+          </ul>
+        ) : (
         <ul className="keys">
           <li><kbd>마우스</kbd> 고리를 가리키기</li>
           <li><kbd>C</kbd> 시점</li>
@@ -22,6 +30,7 @@ export default function PauseOverlay({ onResume, onQuit }: Props) {
           <li><kbd>Z</kbd> 제동</li>
           <li><kbd>Space</kbd> 일시정지</li>
         </ul>
+        )}
 
         <div className="concept-chips">
           {CONCEPTS.map((c) => (

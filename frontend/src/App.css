@@ -1030,3 +1030,162 @@ kbd {
     padding: 28px 16px;
   }
 }
+
+/* ── 태블릿 (손가락 조작) ─────────────────────
+   손가락으로 누르기 쉽게 버튼을 크게(최소 48px) 하고, 화면 가장자리(노치·홈 막대)를 피한다. */
+.hud {
+  padding-top: max(18px, env(safe-area-inset-top));
+  padding-left: max(18px, env(safe-area-inset-left));
+  padding-right: max(18px, env(safe-area-inset-right));
+}
+
+.control-bar {
+  bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.tc-btn {
+  position: absolute;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  background: rgba(13, 14, 16, 0.55);
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  transition: background-color 0.1s, border-color 0.1s, transform 0.1s;
+}
+
+.tc-btn.tc-held {
+  background: rgba(240, 162, 59, 0.3);
+  border-color: var(--accent);
+  transform: scale(0.94);
+}
+
+.touch-pad {
+  position: absolute;
+  z-index: 8;
+  left: max(20px, env(safe-area-inset-left));
+  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 124px);
+  width: 204px;
+  height: 204px;
+}
+
+.touch-pad .tc-btn {
+  width: 72px;
+  height: 72px;
+}
+
+.tc-up { left: 66px; top: 0; }
+.tc-down { left: 66px; bottom: 0; }
+.tc-left { left: 0; top: 66px; }
+.tc-right { right: 0; top: 66px; }
+
+.tc-boost {
+  right: max(24px, env(safe-area-inset-right));
+  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 84px);
+  width: 96px;
+  height: 96px;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+@media (any-pointer: coarse) {
+  .hud {
+    padding-bottom: calc(max(12px, env(safe-area-inset-bottom)) + 76px);
+  }
+
+  .control-bar {
+    width: max-content; /* left:50% 때문에 폭이 화면 절반으로 줄어 두 줄로 접히는 것을 막는다 */
+    gap: 10px;
+  }
+
+  .cb-group {
+    gap: 4px;
+  }
+
+  .cb-btn {
+    min-width: 52px;
+    min-height: 52px;
+    justify-content: center;
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+
+  .primary-btn {
+    padding: 17px 20px;
+    font-size: 17px;
+  }
+
+  .ghost-btn {
+    min-height: 48px;
+    padding: 12px 18px;
+    font-size: 15px;
+  }
+
+  .seg button {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .quiz-choice {
+    min-height: 52px;
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  .field input[type="range"] {
+    height: 36px;
+  }
+
+  .field label {
+    font-size: 14px;
+  }
+
+  .hint-toast {
+    font-size: 15px;
+    top: calc(max(18px, env(safe-area-inset-top)) + 80px);
+  }
+
+  .hud-panel {
+    width: min(300px, 60vw);
+    padding: 10px 12px;
+  }
+
+  .bar {
+    height: 10px;
+  }
+
+  /* 손가락에는 마우스를 올리는(hover) 상태가 없다: 누른 뒤 색이 남지 않게 */
+  .cb-btn:hover {
+    color: var(--dim);
+    border-color: var(--line);
+  }
+
+  .cb-btn.cb-on:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .overlay-screen {
+    padding: max(40px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+}
+
+/* 세로로 든 태블릿: 물리 패널이 화면을 가리지 않게 조금 작게 */
+@media (any-pointer: coarse) and (orientation: portrait) and (min-width: 761px) {
+  .physics-panel {
+    width: 230px;
+    font-size: 12px;
+  }
+}

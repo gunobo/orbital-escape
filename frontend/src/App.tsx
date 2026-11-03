@@ -13,6 +13,8 @@ import PhysicsPanel from "./components/PhysicsPanel";
 import type { ControlMode } from "./components/Scene";
 import { nextPhysicsView, type PhysicsView } from "./constants/physicsView";
 import SettingsScreen from "./components/SettingsScreen";
+import TouchControls from "./components/TouchControls";
+import { IS_TOUCH } from "./hooks/touch";
 import { VIEW_ORDER, type ViewId } from "./constants/camera";
 import { BEST_SCORE_KEY, FUEL_MAX, MAX_MISSES, OIL_TRIGGER_THRESHOLD } from "./constants/physics";
 import type { ConceptId } from "./learning/concepts";
@@ -317,7 +319,12 @@ export default function App() {
     setCountdown(3);
     setRunId((id) => id + 1);
     setPhase("playing");
-    showHint({ id: "start", title: "마우스로 고리를 가리키세요. Space는 일시정지" }, 6000);
+    const startHint = !IS_TOUCH
+      ? "마우스로 고리를 가리키세요. Space는 일시정지"
+      : controlMode === "mouse"
+        ? "손가락으로 화면을 끌어 고리를 가리키세요"
+        : "왼쪽 아래 버튼으로 움직이세요";
+    showHint({ id: "start", title: startHint }, 6000);
   };
 
   const submitScore = (score: number) => {
@@ -425,6 +432,7 @@ export default function App() {
             onToggleInertial={() => setInertialControl((v) => !v)}
             onPause={pauseGame}
           />
+          {IS_TOUCH && !paused && <TouchControls showPad={controlMode === "keyboard"} />}
           {physicsView === "full" && <PhysicsPanel p={hud.physics} />}
           <HintToast hint={hint} />
           {countdown !== null && !paused && (

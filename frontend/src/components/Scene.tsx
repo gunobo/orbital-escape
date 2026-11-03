@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { VIEWS, type ViewId } from "../constants/camera";
 import { BASE_THRUST_FORCE, BOOST_MULTIPLIER, PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_WIDTH } from "../constants/physics";
 import { COLORS } from "../constants/theme";
-import { useControls } from "../hooks/useControls";
+import { useControls, virtualControls } from "../hooks/useControls";
 import { aimPointOnPlane } from "../systems/aim";
 import { clamp } from "../systems/physics";
 import { createSim, nextGateGuide, physicsSnapshot, score, stepSim, type SimEvent, type SimInput, type SimState } from "../systems/simulation";
@@ -162,7 +162,16 @@ export default function Scene({
     let aimZ = pos.z + 45;
     if (running) {
       sim.inertialControl = L.inertialControl;
-      const input: SimInput = { ...controlsRef.current, target: null };
+      const k = controlsRef.current;
+      const v = virtualControls;
+      const input: SimInput = {
+        up: k.up || v.up,
+        down: k.down || v.down,
+        left: k.left || v.left,
+        right: k.right || v.right,
+        boost: k.boost || v.boost,
+        target: null,
+      };
       const keyboardActive = input.up || input.down || input.left || input.right;
       if (L.controlMode === "mouse" && MOUSE_VIEWS.includes(L.view) && !keyboardActive) {
         // 마우스 포인터가 가리키는 선(ray)과, 다음 게이트가 있는 깊이의 평면이 만나는 점이 목표

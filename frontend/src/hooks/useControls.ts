@@ -21,6 +21,19 @@ const KEY_MAP: Record<string, keyof ControlState> = {
   ShiftRight: "boost",
 };
 
+/** 화면 버튼(태블릿)으로 누른 상태. 키보드 입력과 합쳐서 쓴다 */
+export const virtualControls: ControlState = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+  boost: false,
+};
+
+export function releaseVirtualControls() {
+  virtualControls.up = virtualControls.down = virtualControls.left = virtualControls.right = virtualControls.boost = false;
+}
+
 export function useControls() {
   const stateRef = useRef<ControlState>({
     up: false,
@@ -47,6 +60,7 @@ export function useControls() {
     };
     const handleBlur = () => {
       stateRef.current = { up: false, down: false, left: false, right: false, boost: false };
+      releaseVirtualControls();
     };
     window.addEventListener("keydown", handleDown);
     window.addEventListener("keyup", handleUp);

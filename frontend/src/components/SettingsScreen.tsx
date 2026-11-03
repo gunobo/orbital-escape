@@ -1,4 +1,5 @@
-import { Cursor, Keyboard } from "@phosphor-icons/react";
+import { Cursor, GameController, HandPointing, Keyboard } from "@phosphor-icons/react";
+import { IS_TOUCH } from "../hooks/touch";
 import { useState, type ReactNode } from "react";
 import { CONCEPTS } from "../learning/concepts";
 import type { Progress } from "../learning/progress";
@@ -44,10 +45,10 @@ export default function SettingsScreen({
           </label>
           <div className="seg">
             <button className={controlMode === "mouse" ? "seg-on" : ""} onClick={() => onControlMode("mouse")}>
-              <Cursor size={15} weight="fill" /> 마우스 (쉬움)
+              {IS_TOUCH ? <HandPointing size={15} weight="fill" /> : <Cursor size={15} weight="fill" />} {IS_TOUCH ? "터치 (쉬움)" : "마우스 (쉬움)"}
             </button>
             <button className={controlMode === "keyboard" ? "seg-on" : ""} onClick={() => onControlMode("keyboard")}>
-              <Keyboard size={15} /> 키보드
+              {IS_TOUCH ? <GameController size={15} /> : <Keyboard size={15} />} {IS_TOUCH ? "버튼" : "키보드"}
             </button>
           </div>
         </div>
