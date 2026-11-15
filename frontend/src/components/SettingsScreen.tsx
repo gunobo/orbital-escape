@@ -35,7 +35,7 @@ export default function SettingsScreen({
     <div className="overlay-screen">
       <div className="panel">
         <h1>궤도이탈</h1>
-        <p className="subtitle">고리를 통과하며 날아가요</p>
+        <p className="subtitle">고리를 통과하며 아래로 떨어져요</p>
 
         {accountSlot}
 

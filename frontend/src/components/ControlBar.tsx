@@ -63,7 +63,7 @@ export default function ControlBar({
       <button
         className={"cb-btn" + (controlMode === "mouse" ? " cb-on" : "")}
         onClick={press(() => onControlMode(controlMode === "mouse" ? "keyboard" : "mouse"))}
-        title="조종 방식 (M): 마우스로 가리키면 그쪽으로 날아가요"
+        title="조종 방식 (M): 마우스로 가리키면 그쪽으로 움직여요"
         aria-label="조종 방식 전환"
       >
         {controlMode === "mouse" ? <AimIcon size={18} weight="fill" /> : <PadIcon size={18} />}

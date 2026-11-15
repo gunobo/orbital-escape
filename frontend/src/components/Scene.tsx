@@ -20,6 +20,7 @@ import type {
   RunSummary,
 } from "../types";
 import { createForceArrows, updateForceArrows } from "./forceArrows";
+import FallingCues from "./FallingCues";
 import GravityFieldView from "./GravityFieldView";
 import ObstacleView from "./ObstacleView";
 import OilItemView from "./OilItemView";
@@ -113,7 +114,7 @@ export default function Scene({
   const arrows = useMemo(() => createForceArrows(), []);
   const reduceMotion = useMemo(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
 
-  // 콘의 뾰족한 끝이 진행 방향(+z)을 향하도록 미리 돌려둔다
+  // 콘의 뾰족한 끝이 떨어지는 방향(+z = 아래)을 향하도록 미리 돌려둔다
   const shipGeometry = useMemo(() => {
     const g = new THREE.ConeGeometry(0.6, 1.8, 10);
     g.rotateX(Math.PI / 2);
@@ -329,6 +330,7 @@ export default function Scene({
       <group ref={skyRef}>
         <Stars radius={100} depth={50} count={2500} factor={3} fade speed={0} />
       </group>
+      <FallingCues sim={sim} />
       <ambientLight intensity={0.4} />
       <pointLight position={[0, 8, -6]} intensity={40} color="#ffffff" />
       <directionalLight position={[6, 10, 4]} intensity={0.6} />

@@ -62,7 +62,7 @@ export default function HUD({ hud, best }: Props) {
         <div>
           <div className="hud-score">
             <span className="hud-score-value">{hud.scoreMeters}</span>
-            <span className="hud-score-unit">m</span>
+            <span className="hud-score-unit">m 낙하</span>
           </div>
           <div className="hud-best">최고기록 {best} m</div>
         </div>
@@ -75,7 +75,7 @@ export default function HUD({ hud, best }: Props) {
         <div className={"gate-guide" + (hud.gate.aligned ? " gate-ok" : "")}>
           <GateRadar gate={hud.gate} />
           <div className="gate-text">
-            <div className="gate-title">게이트 {Math.max(0, Math.round(hud.gate.distance))}m</div>
+            <div className="gate-title">게이트 {Math.max(0, Math.round(hud.gate.distance))}m 아래</div>
             <div className="gate-dir">{guideText(hud.gate)}</div>
           </div>
         </div>

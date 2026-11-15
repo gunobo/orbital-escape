@@ -63,9 +63,9 @@ export interface PhysicsSnapshot {
   mass: number;
   inertialControl: boolean;
   field: NearFieldSnapshot | null;
-  /** 수평(진행) 속도 — 거의 일정 */
+  /** 낙하(진행) 속도 — 거의 일정 */
   vForward: number;
-  /** 수직(위+) 속도 — 중력·추력으로 변한다 */
+  /** 화면 위아래(위+) 속도 — 중력·추력으로 변한다 */
   vUp: number;
   /** 좌우(화면 오른쪽+) 속도 */
   vRight: number;

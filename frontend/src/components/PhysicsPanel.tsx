@@ -103,14 +103,14 @@ export default function PhysicsPanel({ p }: Props) {
       </details>
 
       <details>
-        <summary>속도 (수평·수직 독립)</summary>
+        <summary>속도 (방향마다 독립)</summary>
         <div className="pp-lines">
           <div className="pp-row">
-            <span>수평 {f1(p.vForward)}</span>
+            <span>낙하 {f1(p.vForward)}</span>
             <Bar value={p.vForward} max={26} color={COLORS.velocity} />
           </div>
           <div className="pp-row">
-            <span>수직 {f1(p.vUp)}</span>
+            <span>위아래 {f1(p.vUp)}</span>
             <Bar value={p.vUp} max={12} color={COLORS.accent} signed />
           </div>
           <div className="pp-row">

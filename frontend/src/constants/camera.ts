@@ -1,5 +1,7 @@
 /**
- * 카메라는 항상 월드 +z(진행 방향)만 바라보고 회전하지 않는다 (평행이동만 한다).
+ * 우주선은 위에서 아래로 떨어진다: 시뮬레이션의 진행 축(+z)이 "아래"이고,
+ * 기본 카메라는 우주선 위에서 그 방향을 내려다본다. 화면 위/아래는 월드 y, 좌우는 월드 x 이다.
+ * 카메라는 항상 같은 방향만 바라보고 회전하지 않는다 (평행이동만 한다).
  * 카메라가 움직이는 물체를 따라 회전하면 화면 전체가 흔들려 멀미가 나기 쉽다.
  */
 export const CAMERA_YAW = Math.PI;
@@ -35,8 +37,8 @@ export const VIEW_ORDER: ViewId[] = ["chase", "high", "top", "side", "cockpit"];
 
 export const VIEWS: Record<ViewId, ViewDef> = {
   chase: {
-    label: "추적",
-    hint: "뒤에서 따라가는 기본 시점",
+    label: "내려다보기",
+    hint: "우주선 위에서 함께 떨어지며 아래를 내려다보는 기본 시점",
     offset: [0, 3.2, -13],
     followX: 0.5,
     followY: 0.5,
@@ -45,8 +47,8 @@ export const VIEWS: Record<ViewId, ViewDef> = {
     fov: 62,
   },
   high: {
-    label: "높은 추적",
-    hint: "더 높고 멀리서 봐서 앞길 전체가 보여요",
+    label: "높이서 보기",
+    hint: "더 높이서 내려다봐서 아래쪽 길이 멀리까지 보여요",
     offset: [0, 16, -30],
     followX: 0.8,
     followY: 0.8,
@@ -55,18 +57,18 @@ export const VIEWS: Record<ViewId, ViewDef> = {
     fov: 60,
   },
   top: {
-    label: "위에서",
-    hint: "좌우 위치(x)와 거리(z)가 보여요. 높이는 안 보여요",
-    offset: [0, 46, 14],
+    label: "옆에서(좌우)",
+    hint: "좌우 위치(x)와 떨어진 거리가 보여요. 화면 위아래(y)는 안 보여요",
+    offset: [0, -46, 14],
     followX: 1,
     followY: 0,
-    dir: [0, -1, 0],
-    up: [0, 0, 1],
+    dir: [0, 1, 0],
+    up: [0, 0, -1],
     fov: 50,
   },
   side: {
-    label: "옆에서",
-    hint: "높이(y) 변화와 거리(z)가 보여요. 자유낙하·포물선 관찰용이고 좌우 이동은 안 보여요",
+    label: "운석 관찰",
+    hint: "화면 위아래(y) 변화와 떨어진 거리가 보여요. 운석의 자유낙하·포물선 관찰용이고 좌우 이동은 안 보여요",
     offset: [-34, 0, 16],
     followX: 1,
     followY: 0.85,
@@ -76,7 +78,7 @@ export const VIEWS: Record<ViewId, ViewDef> = {
   },
   cockpit: {
     label: "1인칭",
-    hint: "우주선 앞머리에서 본 시점",
+    hint: "우주선 앞머리에서 아래를 본 시점",
     offset: [0, 0.4, 1.2],
     followX: 1,
     followY: 1,
