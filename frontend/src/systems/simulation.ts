@@ -235,8 +235,20 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
   }
   vel.z = Math.max(C.MIN_FORWARD_SPEED, vel.z);
 
-  pos.x = clamp(pos.x + vel.x * dt, -C.PLAYFIELD_HALF_WIDTH, C.PLAYFIELD_HALF_WIDTH);
-  pos.y = clamp(pos.y + vel.y * dt, -C.PLAYFIELD_HALF_HEIGHT, C.PLAYFIELD_HALF_HEIGHT);
+  // 플레이 영역 가장자리에 닿으면 그 방향 속도는 없어진다 (벽에 붙어 버티다가 늦게 돌아오는 일이 없게)
+  const nx = pos.x + vel.x * dt;
+  const ny = pos.y + vel.y * dt;
+  pos.x = clamp(nx, -C.PLAYFIELD_HALF_WIDTH, C.PLAYFIELD_HALF_WIDTH);
+  pos.y = clamp(ny, -C.PLAYFIELD_HALF_HEIGHT, C.PLAYFIELD_HALF_HEIGHT);
+  // 벽에 막혀 없어진 운동에너지도 "손실"로 기록한다 (에너지가 사라진 게 아니라 충격·열로 빠져나감)
+  if (pos.x !== nx) {
+    sim.energy.brake += 0.5 * sim.mass * vel.x * vel.x;
+    vel.x = 0;
+  }
+  if (pos.y !== ny) {
+    sim.energy.brake += 0.5 * sim.mass * vel.y * vel.y;
+    vel.y = 0;
+  }
   pos.z += vel.z * dt;
 
   for (const field of world.fields) {

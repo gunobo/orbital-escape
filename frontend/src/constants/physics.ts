@@ -17,14 +17,14 @@ export const FUEL_MASS_PER_UNIT = 0.006;
 export const BASE_THRUST_FORCE = 17;
 export const BOOST_MULTIPLIER = 1.9;
 /** 마우스 조종: 목표 위치까지의 거리/속도에 비례해 가속도를 정한다 (PD 제어) */
-export const STEER_KP = 2.2;
-export const STEER_KD = 2.4;
+export const STEER_KP = 1.8;
+export const STEER_KD = 1.7;
 /**
  * 관성 제어 장치(자동 제동): 우주에는 공기 저항이 없으므로 "공짜 감속"은 없다.
  * 대신 역추진으로 횡방향 속도를 줄이고, 줄어든 운동에너지만큼 연료를 쓴다(에너지 손실 = 배기·열).
  * 끄면(Z키) 뉴턴의 관성 법칙 그대로 미끄러지며 역학적 에너지가 보존된다.
  */
-export const INERTIAL_BRAKE_RATE = 1.6;
+export const INERTIAL_BRAKE_RATE = 0.9;
 /** 제동으로 없앤 운동에너지 1단위당 소모하는 연료 */
 export const BRAKE_FUEL_PER_ENERGY = 0.02;
 

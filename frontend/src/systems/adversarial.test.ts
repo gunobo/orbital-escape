@@ -108,7 +108,8 @@ describe("에너지 보존: 여러 조건에서도 성립하는가", () => {
       const angle = rng() * Math.PI * 2;
       sim.pos = { x: f.position.x + Math.cos(angle) * offset, y: f.position.y + Math.sin(angle) * offset, z: f.position.z - 25 };
       sim.vel = { x: (rng() - 0.5) * 6, y: (rng() - 0.5) * 6, z: 10 + rng() * 10 };
-      const mech = () => kineticEnergy(sim) + potentialEnergy(sim);
+      // 플레이 영역 벽에 막혀 잃은 에너지는 손실로 따로 기록되므로, 그것까지 더해 총량을 본다
+      const mech = () => kineticEnergy(sim) + potentialEnergy(sim) + sim.energy.brake;
       const e0 = mech();
       const ke0 = kineticEnergy(sim);
       let dev = 0;

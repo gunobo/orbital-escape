@@ -32,6 +32,8 @@ const MOUSE_VIEWS: ViewId[] = ["chase", "high", "cockpit"];
 
 /** 부딪히거나 목숨이 다하면, 효과를 보여 준 뒤 결과 화면으로 넘어간다 (초) */
 const END_DELAY = 0.8;
+/** 마우스 목표점이 실제 포인터를 따라가는 빠르기 (1/초). 클수록 즉각적, 작을수록 부드럽다 */
+const AIM_SMOOTHING = 9;
 const MAX_EFFECTS = 6;
 
 interface Effect {
@@ -178,11 +180,19 @@ export default function Scene({
         // 마우스 포인터가 가리키는 선(ray)과, 다음 게이트가 있는 깊이의 평면이 만나는 점이 목표
         const gate = world.fields.find((f) => !f.resolved && f.position.z > pos.z);
         aimZ = gate && gate.position.z - pos.z < 140 ? gate.position.z : pos.z + 45;
+        // 화면 흔들림이 조준에 섞이지 않도록, 흔들리기 전 카메라 위치에서 조준한다
+        camera.position.x = camBase.current.x;
+        camera.position.y = camBase.current.y;
+        camera.updateMatrixWorld();
         if (aimPointOnPlane(camera, state.pointer, aimZ, aimPoint)) {
-          lastTarget.current = {
+          const want = {
             x: clamp(aimPoint.x, -PLAYFIELD_HALF_WIDTH, PLAYFIELD_HALF_WIDTH),
             y: clamp(aimPoint.y, -PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_HEIGHT),
           };
+          // 목표점은 부드럽게 따라간다 (게이트를 지나 조준 깊이가 바뀌어도 툭 튀지 않는다)
+          const prev = lastTarget.current;
+          const k = 1 - Math.exp(-dt * AIM_SMOOTHING);
+          lastTarget.current = prev ? { x: prev.x + (want.x - prev.x) * k, y: prev.y + (want.y - prev.y) * k } : want;
         }
         input.target = lastTarget.current;
       }
@@ -293,13 +303,6 @@ export default function Scene({
       }
       shakeX = (Math.random() - 0.5) * amp;
       shakeY = (Math.random() - 0.5) * amp;
-      // 낙하하며 맞는 바람에 몸이 잔잔하게 떨린다 (빠를수록 세게)
-      if (running) {
-        const buffet = 0.025 + Math.max(0, vel.z - 12) * 0.006;
-        const t = state.clock.elapsedTime;
-        shakeX += Math.sin(t * 23.1) * Math.sin(t * 7.3) * buffet;
-        shakeY += Math.sin(t * 19.7 + 1.3) * Math.sin(t * 5.9) * buffet;
-      }
     }
     camera.position.set(camBase.current.x + shakeX, camBase.current.y + shakeY, cz);
     camera.up.set(V.up[0], V.up[1], V.up[2]);
