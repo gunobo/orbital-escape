@@ -33,12 +33,12 @@ export interface ViewDef {
   fov: number;
 }
 
-export const VIEW_ORDER: ViewId[] = ["chase", "high", "top", "side", "cockpit"];
+export const VIEW_ORDER: ViewId[] = ["cockpit", "chase", "high", "top", "side"];
 
 export const VIEWS: Record<ViewId, ViewDef> = {
   chase: {
     label: "내려다보기",
-    hint: "우주선 위에서 함께 떨어지며 아래를 내려다보는 기본 시점",
+    hint: "우주선 위에서 함께 떨어지며 아래를 내려다보는 시점",
     offset: [0, 3.2, -13],
     followX: 0.5,
     followY: 0.5,
@@ -78,7 +78,7 @@ export const VIEWS: Record<ViewId, ViewDef> = {
   },
   cockpit: {
     label: "1인칭",
-    hint: "우주선 앞머리에서 아래를 본 시점",
+    hint: "우주선에 타서 발아래를 내려다보며 떨어지는 기본 시점",
     offset: [0, 0.4, 1.2],
     followX: 1,
     followY: 1,

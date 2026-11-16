@@ -266,11 +266,15 @@ export default function Scene({
     const cx = pos.x * V.followX + V.offset[0];
     const cy = pos.y * V.followY + V.offset[1];
     const cz = pos.z + V.offset[2];
+    // 빨리 떨어질수록 시야가 살짝 넓어진다 (속도감)
+    const fov = V.fov + (reduceMotion ? 0 : clamp((vel.z - 14) * 0.9, 0, 9));
+    if (Math.abs(camera.fov - fov) > 0.05) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
     if (lastView.current !== L.view) {
       lastView.current = L.view;
       camBase.current = { x: cx, y: cy };
-      camera.fov = V.fov;
-      camera.updateProjectionMatrix();
     } else {
       const follow = Math.min(1, dt * 5);
       camBase.current.x += (cx - camBase.current.x) * follow;
@@ -289,6 +293,13 @@ export default function Scene({
       }
       shakeX = (Math.random() - 0.5) * amp;
       shakeY = (Math.random() - 0.5) * amp;
+      // 낙하하며 맞는 바람에 몸이 잔잔하게 떨린다 (빠를수록 세게)
+      if (running) {
+        const buffet = 0.025 + Math.max(0, vel.z - 12) * 0.006;
+        const t = state.clock.elapsedTime;
+        shakeX += Math.sin(t * 23.1) * Math.sin(t * 7.3) * buffet;
+        shakeY += Math.sin(t * 19.7 + 1.3) * Math.sin(t * 5.9) * buffet;
+      }
     }
     camera.position.set(camBase.current.x + shakeX, camBase.current.y + shakeY, cz);
     camera.up.set(V.up[0], V.up[1], V.up[2]);

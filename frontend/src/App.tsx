@@ -51,11 +51,11 @@ const INITIAL_HUD: HudSnapshot = {
 
 const CONTROL_MODE_KEY = "orbital-escape-control-mode";
 const VIEW_KEYS: Record<string, ViewId> = {
-  Digit1: "chase",
-  Digit2: "high",
-  Digit3: "top",
-  Digit4: "side",
-  Digit5: "cockpit",
+  Digit1: "cockpit",
+  Digit2: "chase",
+  Digit3: "high",
+  Digit4: "top",
+  Digit5: "side",
 };
 
 function readBest(): number {
@@ -101,7 +101,7 @@ export default function App() {
   const [serverResult, setServerResult] = useState<ScoreResult | null>(null);
 
   const [progress, setProgress] = useState<Progress>(loadProgress);
-  const [view, setView] = useState<ViewId>("chase");
+  const [view, setView] = useState<ViewId>("cockpit");
   const [paused, setPaused] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   // 물리 보기: 끔 → 화살표만(기본) → 화살표 + 패널. 기본 화면은 글이 거의 없게 한다
