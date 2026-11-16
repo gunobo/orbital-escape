@@ -11,29 +11,29 @@ import type { SimState } from "../systems/simulation";
  *  - 바람 줄무늬: 몸 곁을 위로 스쳐 지나가는 선. 빨리 떨어질수록 길어진다.
  */
 
-const STREAK_COUNT = 160;
-const STREAK_AHEAD = 170;
+const STREAK_COUNT = 280;
+const STREAK_AHEAD = 150;
 const STREAK_BEHIND = 12;
-const STREAK_SPREAD_X = 42;
-const STREAK_SPREAD_Y = 32;
+const STREAK_SPREAD_X = 30;
+const STREAK_SPREAD_Y = 22;
 
 /** 지면은 카메라 앞(아래) 이 거리에 늘 붙어 있고, 무늬만 커진다 */
 const GROUND_DIST = 420;
 const GROUND_SIZE = 1400;
 /** 이만큼(m) 떨어질 때마다 땅 무늬가 2배로 커진다 */
-const GROUND_ZOOM_PERIOD = 90;
+const GROUND_ZOOM_PERIOD = 45;
 const GROUND_REPEAT = 6;
 
-const CLOUD_LAYERS = 4;
-const CLOUD_LAYER_GAP = 120;
-const CLOUD_PUFFS = 26;
+const CLOUD_LAYERS = 6;
+const CLOUD_LAYER_GAP = 70;
+const CLOUD_PUFFS = 30;
 
 function placeStreak(p: THREE.Vector3, baseZ: number, spanZ: number) {
   // 시야 한가운데는 비워 둬서 게이트·운석을 가리지 않게 한다
   for (;;) {
     p.x = (Math.random() * 2 - 1) * STREAK_SPREAD_X;
     p.y = (Math.random() * 2 - 1) * STREAK_SPREAD_Y;
-    if (Math.abs(p.x) > 6 || Math.abs(p.y) > 5) break;
+    if (Math.abs(p.x) > 3.5 || Math.abs(p.y) > 2.5) break;
   }
   p.z = baseZ + Math.random() * spanZ;
 }
@@ -44,7 +44,7 @@ function makeGroundTexture(): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = c.height = size;
   const g = c.getContext("2d")!;
-  g.fillStyle = "#151a20";
+  g.fillStyle = "#1a2027";
   g.fillRect(0, 0, size, size);
   let seed = 7;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -60,10 +60,10 @@ function makeGroundTexture(): THREE.CanvasTexture {
       }
     }
   };
-  for (let i = 0; i < 40; i++) blob(rnd() * size, rnd() * size, 30 + rnd() * 90, i % 3 === 0 ? "rgba(70,84,72,0.45)" : "rgba(52,60,72,0.5)");
-  for (let i = 0; i < 30; i++) blob(rnd() * size, rnd() * size, 6 + rnd() * 18, "rgba(150,140,110,0.25)");
+  for (let i = 0; i < 40; i++) blob(rnd() * size, rnd() * size, 30 + rnd() * 90, i % 3 === 0 ? "rgba(84,104,80,0.6)" : "rgba(60,72,88,0.6)");
+  for (let i = 0; i < 30; i++) blob(rnd() * size, rnd() * size, 6 + rnd() * 18, "rgba(176,160,120,0.4)");
   // 격자 (밭·도로): 다가오면서 커지는 게 잘 보인다
-  g.strokeStyle = "rgba(170,180,195,0.16)";
+  g.strokeStyle = "rgba(190,200,215,0.28)";
   g.lineWidth = 2;
   for (let i = 0; i <= 8; i++) {
     const v = (i / 8) * size;
@@ -137,10 +137,10 @@ export default function FallingCues({ sim }: { sim: SimState }) {
       geo.setAttribute("position", new THREE.BufferAttribute(pts, 3));
       const mat = new THREE.PointsMaterial({
         map,
-        size: 26,
+        size: 34,
         sizeAttenuation: true,
         transparent: true,
-        opacity: 0.16,
+        opacity: 0.2,
         color: "#c7d0db",
         depthWrite: false,
       });
@@ -153,7 +153,7 @@ export default function FallingCues({ sim }: { sim: SimState }) {
 
     const mesh = streaksRef.current;
     if (mesh) {
-      const len = reduceMotion ? 0.6 : Math.max(0.6, vel.z * 0.3);
+      const len = reduceMotion ? 0.6 : Math.max(0.6, vel.z * 0.45);
       for (let i = 0; i < STREAK_COUNT; i++) {
         const p = positions[i];
         if (p.z < pos.z - STREAK_BEHIND) placeStreak(p, pos.z + STREAK_AHEAD * 0.6, STREAK_AHEAD * 0.4);
@@ -212,8 +212,8 @@ export default function FallingCues({ sim }: { sim: SimState }) {
       ))}
 
       <instancedMesh ref={streaksRef} args={[undefined, undefined, STREAK_COUNT]} frustumCulled={false}>
-        <boxGeometry args={[0.05, 0.05, 1]} />
-        <meshBasicMaterial color="#c9ced6" transparent opacity={0.4} />
+        <boxGeometry args={[0.04, 0.04, 1]} />
+        <meshBasicMaterial color="#e6eaef" transparent opacity={0.55} />
       </instancedMesh>
     </>
   );

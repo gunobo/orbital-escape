@@ -31,11 +31,16 @@ function nearFirstField(sim: SimState, ahead = 24, offsetX = 3) {
 }
 
 describe("기본 운동", () => {
-  it("전진 속도만큼 점수(m)가 오른다", () => {
+  it("출발하면 등가속도로 빨라지다가 순항 속도에서 멈추고, 떨어진 거리만큼 점수(m)가 오른다", () => {
     const sim = calmSim();
     for (let i = 0; i < 60; i++) stepSim(sim, NO_INPUT, DT);
-    expect(score(sim)).toBeGreaterThanOrEqual(12);
-    expect(score(sim)).toBeLessThanOrEqual(16);
+    // 1초 동안: s = v0·t + ½·a·t² = 4 + 2.5 = 6.5 m, 속도는 4 + 5 = 9 m/s
+    expect(score(sim)).toBe(6);
+    expect(sim.vel.z).toBeCloseTo(C.MIN_FORWARD_SPEED + C.FALL_ACCEL, 1);
+    for (let i = 0; i < 120; i++) stepSim(sim, NO_INPUT, DT);
+    // 순항 속도(14 m/s 근처)를 넘지 않는다
+    expect(sim.vel.z).toBeGreaterThan(C.CRUISE_SPEED_BASE - 0.5);
+    expect(sim.vel.z).toBeLessThan(C.CRUISE_SPEED_BASE + 1);
   });
 
   it("오른쪽 입력은 화면 오른쪽으로 민다 (카메라가 +z를 보므로 월드 -x)", () => {

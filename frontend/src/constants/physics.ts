@@ -33,6 +33,11 @@ export const CRUISE_SPEED_GAIN_PER_METER = 0.015;
 export const CRUISE_SPEED_MAX = 22;
 export const CRUISE_RESTORE_RATE = 0.6;
 export const MIN_FORWARD_SPEED = 4;
+/**
+ * 출발은 거의 멈춘 상태(MIN_FORWARD_SPEED)에서 시작해, 떨어지는 물체처럼 일정한 가속도로 빨라진다.
+ * 순항 속도(종단 속도처럼 더 이상 빨라지지 않는 속도)에 닿으면 멈춘다. 중력장을 빠져나와 느려졌을 때도 같다.
+ */
+export const FALL_ACCEL = 5;
 
 export const GRAVITY_FIELD_MU_BASE = 420;
 export const GRAVITY_FIELD_MU_GAIN_PER_METER = 0.25;

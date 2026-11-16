@@ -87,7 +87,7 @@ export function createSim(settings: ObstacleSettings, rng: Rng = Math.random): S
   const mass = massFor(C.FUEL_MAX);
   const sim: SimState = {
     pos: { x: 0, y: 0, z: 0 },
-    vel: { x: 0, y: 0, z: C.CRUISE_SPEED_BASE },
+    vel: { x: 0, y: 0, z: C.MIN_FORWARD_SPEED },
     fuel: C.FUEL_MAX,
     mass,
     misses: 0,
@@ -231,7 +231,12 @@ export function stepSim(sim: SimState, input: SimInput, dt: number): void {
       C.CRUISE_SPEED_BASE + pos.z * C.CRUISE_SPEED_GAIN_PER_METER,
       C.CRUISE_SPEED_MAX,
     );
-    vel.z += (cruiseTarget - vel.z) * C.CRUISE_RESTORE_RATE * dt;
+    if (vel.z < cruiseTarget) {
+      // 느리면 떨어지는 물체처럼 일정한 가속도로 빨라진다
+      vel.z = Math.min(cruiseTarget, vel.z + C.FALL_ACCEL * dt);
+    } else {
+      vel.z += (cruiseTarget - vel.z) * C.CRUISE_RESTORE_RATE * dt;
+    }
   }
   vel.z = Math.max(C.MIN_FORWARD_SPEED, vel.z);
 

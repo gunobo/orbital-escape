@@ -502,8 +502,19 @@ kbd {
   color: var(--dim);
 }
 
+.hud-fall {
+  margin-top: 4px;
+  font: 600 18px/1 var(--mono);
+  color: var(--accent);
+}
+
+.hud-fall span {
+  font-size: 12px;
+  color: var(--dim);
+}
+
 .hud-best {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: 12px;
   color: var(--dim);
 }

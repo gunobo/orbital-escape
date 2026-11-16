@@ -64,6 +64,9 @@ export default function HUD({ hud, best }: Props) {
             <span className="hud-score-value">{hud.scoreMeters}</span>
             <span className="hud-score-unit">m 낙하</span>
           </div>
+          <div className="hud-fall" aria-label={`낙하 속도 ${hud.physics.vForward.toFixed(0)} m/s`}>
+            ↓ {hud.physics.vForward.toFixed(0)} <span>m/s</span>
+          </div>
           <div className="hud-best">최고기록 {best} m</div>
         </div>
         <div className="hud-lives-box">

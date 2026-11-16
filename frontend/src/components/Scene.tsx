@@ -303,6 +303,13 @@ export default function Scene({
       }
       shakeX = (Math.random() - 0.5) * amp;
       shakeY = (Math.random() - 0.5) * amp;
+      // 1인칭에서는 떨어지며 맞는 바람에 몸이 천천히 흔들린다. 조준은 흔들리기 전 위치로 하므로 조종에는 영향이 없다
+      if (running && L.view === "cockpit") {
+        const sway = 0.03 + Math.max(0, vel.z - 10) * 0.006;
+        const t = state.clock.elapsedTime;
+        shakeX += (Math.sin(t * 5.3) + 0.5 * Math.sin(t * 11.7)) * sway;
+        shakeY += (Math.sin(t * 4.1 + 1.7) + 0.5 * Math.sin(t * 9.3)) * sway;
+      }
     }
     camera.position.set(camBase.current.x + shakeX, camBase.current.y + shakeY, cz);
     camera.up.set(V.up[0], V.up[1], V.up[2]);
